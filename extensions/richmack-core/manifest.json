@@ -1,17 +1,54 @@
 {
   "manifest_version": 3,
   "name": "Richmack Core",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "description": "Richmack Browser core: dark new tab, workspaces, and qutebrowser-style keyboard controls.",
-  "permissions": ["storage","tabs","sessions","tabGroups"],
-  "background": {"service_worker":"background.js"},
-  "action": {
-    "default_title":"Richmack Core",
-    "default_popup":"popup/index.html",
-    "default_icon":{"16":"icons/icon16.png","32":"icons/icon32.png","48":"icons/icon48.png"}
+  "permissions": [
+    "storage",
+    "tabs",
+    "sessions",
+    "tabGroups"
+  ],
+  "background": {
+    "service_worker": "background.js"
   },
-  "chrome_url_overrides":{"newtab":"newtab/index.html"},
-  "content_scripts":[{"matches":["http://*/*","https://*/*"],"js":["content.js"],"run_at":"document_idle"}],
-  "commands":{"toggle-richmack-mode":{"suggested_key":{"default":"Ctrl+Shift+Space","mac":"Command+Shift+Space"},"description":"Toggle Richmack Mode"}},
-  "icons":{"16":"icons/icon16.png","32":"icons/icon32.png","48":"icons/icon48.png","128":"icons/icon128.png"}
+  "action": {
+    "default_title": "Richmack Core",
+    "default_popup": "popup/index.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png"
+    }
+  },
+  "chrome_url_overrides": {
+    "newtab": "newtab/index.html"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "commands": {
+    "toggle-richmack-mode": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+Space",
+        "mac": "Command+Shift+Space"
+      },
+      "description": "Toggle Richmack Mode"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
 }

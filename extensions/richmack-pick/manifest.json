@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Richmack Pick",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "description": "Visually select a page element for safe Richmack automation",
   "permissions": [
     "activeTab",

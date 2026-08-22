@@ -75,7 +75,7 @@ def health():
         "status": "ok",
         "download_root": str(DOWNLOAD_ROOT),
         "feeds": True,
-        "suite": "0.5.2",
+        "suite": "0.5.3",
         "shared_picker": True,
     }
 

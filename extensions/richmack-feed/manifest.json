@@ -1,11 +1,13 @@
 {
   "manifest_version": 3,
   "name": "Richmack Feed",
-  "version": "0.5.2",
-  "description": "Detect native RSS/Atom feeds or generate a local RSS feed",
+  "version": "0.5.3",
+  "description": "Detect native feeds or build clean, readable local feeds from page content",
   "permissions": [
     "activeTab",
-    "scripting"
+    "scripting",
+    "storage",
+    "tabs"
   ],
   "host_permissions": [
     "http://127.0.0.1:8765/*"
