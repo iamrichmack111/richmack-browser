@@ -1,4 +1,4 @@
-# Richmack Browser OS v0.6.0
+# Richmack Browser OS v0.6.1
 
 Richmack Browser OS is a lightweight, dark Chromium distribution layer: a dedicated Chromium profile, a custom Richmack new-tab experience, eight separate toolbar extensions, and an optional localhost container for generated feeds/media services. It keeps Chromium's native tabs and security/update path rather than maintaining a Chromium fork.
 
@@ -30,8 +30,8 @@ The package copies itself to a persistent install directory, so you can delete t
 
 ```bash
 cd ~/Downloads
-unzip richmack-browser-v0.6.0.zip
-cd richmack-browser-v0.6.0
+unzip richmack-browser-v0.6.1.zip
+cd richmack-browser-v0.6.1
 ./install.sh
 ```
 
@@ -50,8 +50,8 @@ Installed locations:
 
 ```bash
 cd ~/Downloads
-unzip richmack-browser-v0.6.0.zip
-cd richmack-browser-v0.6.0
+unzip richmack-browser-v0.6.1.zip
+cd richmack-browser-v0.6.1
 ./install.sh
 ```
 
@@ -72,13 +72,13 @@ The desktop application uses the Richmack blue wolf icon in `assets/`. macOS rec
 
 ## Extension-only package
 
-You do **not** have to distribute the whole browser package. `richmack-extension-suite-v0.6.0.zip` contains only the eight Richmack Chromium extensions.
+You do **not** have to distribute the whole browser package. `richmack-extension-suite-v0.6.1.zip` contains only the eight Richmack Chromium extensions.
 
 This is useful for someone who wants Richmack tools in an existing Chromium profile without the desktop application or Docker backend.
 
 For development/unpacked installation:
 
-1. Extract `richmack-extension-suite-v0.6.0.zip`.
+1. Extract `richmack-extension-suite-v0.6.1.zip`.
 2. Open `chrome://extensions` in Chromium.
 3. Enable **Developer mode**.
 4. Choose **Load unpacked** for whichever extension folders you want.
@@ -171,11 +171,30 @@ Uninstall intentionally leaves the Richmack profile at `~/.richmack/browser-prof
 
 ## Release artifacts
 
-A v0.6.0 release can publish both:
+A v0.6.1 release can publish both:
 
 ```text
-richmack-browser-v0.6.0.zip            full macOS/Ubuntu installer
-richmack-extension-suite-v0.6.0.zip    extensions only
+richmack-browser-v0.6.1.zip            full macOS/Ubuntu installer
+richmack-extension-suite-v0.6.1.zip    extensions only
 ```
 
 This lets users choose between the full Richmack Browser experience and the standalone Richmack toolbar toolkit.
+
+## CI/CD
+
+Richmack Browser includes GitHub Actions for continuous testing and releases.
+
+On every push and pull request to `main`, CI validates all eight Manifest V3 extensions, checks JavaScript and shell syntax, runs backend regression tests, creates release packages as a dry run, builds the Richmack Services container, starts it with a hardened configuration, and verifies `/health`.
+
+Release automation is tag-driven. After the repository version has been bumped and committed, pushing a tag such as `v0.6.1` runs the test suite, publishes `richmack-browser-services` to GHCR with both versioned and `latest` tags, creates the full-browser and extensions-only ZIP files, generates SHA-256 checksums, and creates the GitHub Release automatically.
+
+```bash
+# Normal CI
+git push origin main
+
+# Release only after CI is green
+git tag v0.6.1
+git push origin v0.6.1
+```
+
+Do not manually create the GitHub Release before pushing the release tag when using this workflow.
