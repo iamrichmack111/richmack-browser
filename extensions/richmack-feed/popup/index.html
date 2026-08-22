@@ -1,1 +1,16 @@
-<!doctype html><meta charset="utf-8"><link rel="stylesheet" href="style.css"><main><header><img src="../icons/icon48.png"><div><b>FEED</b><small>RSS · Atom · generated</small></div></header><button id="find">Detect feed</button><pre id="out">Ready.</pre><div class="row"><button id="copy" disabled>Copy URL</button><button id="generate">Generate RSS</button></div></main><script src="app.js"></script>
+<!doctype html>
+<meta charset="utf-8">
+<link rel="stylesheet" href="style.css">
+<main>
+  <header><img src="../icons/icon48.png"><div><b>FEED</b><small>RSS · Atom · smart generated feeds</small></div></header>
+  <button id="find">Detect feed / page type</button>
+  <div id="stats" class="stats" hidden>
+    <div class="stat"><b id="type">—</b><span>Type</span></div>
+    <div class="stat"><b id="raw">0</b><span>Links</span></div>
+    <div class="stat"><b id="items">0</b><span>Items</span></div>
+  </div>
+  <pre id="out">Ready.</pre>
+  <div class="row"><button id="copy" disabled>Copy URL</button><button id="generate">Generate RSS</button></div>
+  <button id="preview">Preview cleaned items</button>
+</main>
+<script src="app.js"></script>

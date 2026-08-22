@@ -1,4 +1,4 @@
-# Richmack Browser OS v0.5.1
+# Richmack Browser OS v0.5.2
 
 Richmack v0.5 changes the interface from one large extension popup to a **suite of small native Chromium toolbar extensions**. The browser keeps native Chromium tabs and security updates, while the Richmack layer supplies its own dark new-tab experience, keyboard mode, extraction tools, automation helpers, and local RSS/media services.
 
@@ -32,8 +32,8 @@ The mode content script is deliberately tiny and event-driven: no page polling, 
 
 ```bash
 cd ~/Downloads
-unzip richmack-browser-v0.5.1.zip
-cd richmack-browser-v0.5.1
+unzip richmack-browser-v0.5.2.zip
+cd richmack-browser-v0.5.2
 ./install.sh
 ```
 
@@ -52,3 +52,9 @@ If the individual icons are not visible, open `chrome://extensions` and enable *
 - No recursive site crawling by default.
 
 Generated RSS feeds are local URLs under `http://127.0.0.1:8765/feeds/` and are not exposed to the LAN or internet.
+
+## v0.5.2 smart feed cleanup
+
+The Feed tool now detects Indeed search/result pages as a Jobs page type. Instead of turning every visible link into RSS, it selects probable job-card links carrying an Indeed `jk` job key, canonicalizes them to `https://www.indeed.com/viewjob?jk=...`, deduplicates on the stable job key, and uses that key as a non-permalink RSS GUID. When available, company/location/salary context is included in the RSS description. The popup includes a cleaned-item preview before generation.
+
+Generic pages still use the conservative repeated-content fallback, and native RSS/Atom feeds are always preferred when present.

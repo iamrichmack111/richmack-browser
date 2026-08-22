@@ -3,7 +3,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 mkdir -p "$HOME/.richmack" "$HOME/Downloads/Richmack"
 
-echo "[1/4] Richmack Browser OS v0.5.1"
+echo "[1/4] Richmack Browser OS v0.5.2"
 if [ ! -x /Applications/Chromium.app/Contents/MacOS/Chromium ]; then
   echo "Chromium was not found. Install it first:"
   echo "  brew install --cask chromium"
@@ -12,7 +12,7 @@ fi
 
 echo "[2/4] Checking local Richmack service"
 HEALTH="$(curl -fsS --max-time 1 http://127.0.0.1:8765/health 2>/dev/null || true)"
-if printf '%s' "$HEALTH" | grep -q '"suite":"0.5.1"'; then
+if printf '%s' "$HEALTH" | grep -q '"suite":"0.5.2"'; then
   echo "      Backend already ready"
 elif command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1; then
   echo "      Replacing older Richmack backend if necessary"

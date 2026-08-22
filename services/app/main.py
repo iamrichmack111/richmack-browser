@@ -31,10 +31,13 @@ class FeedItem(BaseModel):
     title: str = Field(min_length=1, max_length=300)
     url: str = Field(min_length=8, max_length=4096)
     summary: str = Field(default="", max_length=2000)
+    id: str = Field(default="", max_length=500)
+    category: str = Field(default="", max_length=100)
 
 class FeedRequest(BaseModel):
     source_url: str = Field(min_length=8, max_length=4096)
     title: str = Field(min_length=1, max_length=300)
+    page_type: str = Field(default="generic", max_length=50)
     items: list[FeedItem] = Field(min_length=1, max_length=100)
 
 class PickedState(BaseModel):
@@ -72,7 +75,7 @@ def health():
         "status": "ok",
         "download_root": str(DOWNLOAD_ROOT),
         "feeds": True,
-        "suite": "0.5.1",
+        "suite": "0.5.2",
         "shared_picker": True,
     }
 
@@ -161,7 +164,7 @@ def generate_feed(req: FeedRequest):
         if url in seen:
             continue
         seen.add(url)
-        cleaned.append((item.title.strip(), url, item.summary.strip()))
+        cleaned.append((item.title.strip(), url, item.summary.strip(), item.id.strip(), item.category.strip()))
         if len(cleaned) >= 60:
             break
     if not cleaned:
@@ -170,13 +173,17 @@ def generate_feed(req: FeedRequest):
     filename = f"richmack-{slug}.xml"
     now = datetime.now(timezone.utc).strftime("%a, %d %b %Y %H:%M:%S +0000")
     items_xml = []
-    for title, url, summary in cleaned:
+    for title, url, summary, item_id, category in cleaned:
+        guid = item_id or url
+        permalink = "false" if item_id else "true"
+        category_xml = f"<category>{xml_text(category)}</category>" if category else ""
         items_xml.append(
             "<item>"
             f"<title>{xml_text(title)}</title>"
             f"<link>{xml_text(url)}</link>"
-            f"<guid isPermaLink=\"true\">{xml_text(url)}</guid>"
+            f"<guid isPermaLink=\"{permalink}\">{xml_text(guid)}</guid>"
             f"<description>{xml_text(summary)}</description>"
+            f"{category_xml}"
             f"<pubDate>{now}</pubDate>"
             "</item>"
         )
@@ -195,6 +202,7 @@ def generate_feed(req: FeedRequest):
         "ok": True,
         "name": filename,
         "items": len(cleaned),
+        "page_type": req.page_type,
         "feed_url": f"http://127.0.0.1:8765/feeds/{filename}",
     }
 
