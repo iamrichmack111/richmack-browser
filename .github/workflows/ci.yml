@@ -1,0 +1,226 @@
+name: Richmack Browser CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+
+  extensions:
+    name: Extension Validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Validate extension manifests
+        shell: bash
+        run: |
+          set -e
+
+          echo "Finding manifests..."
+
+          count=0
+
+          while IFS= read -r manifest; do
+            echo "Checking $manifest"
+
+            node -e "
+              const fs=require('fs');
+              const p=process.argv[1];
+              const m=JSON.parse(fs.readFileSync(p,'utf8'));
+
+              if (!m.manifest_version)
+                throw new Error('Missing manifest_version');
+
+              if (!m.name)
+                throw new Error('Missing extension name');
+
+              if (!m.version)
+                throw new Error('Missing version');
+
+              console.log(
+                'OK:',
+                m.name,
+                'v' + m.version,
+                'Manifest V' + m.manifest_version
+              );
+            " "$manifest"
+
+            count=$((count + 1))
+          done < <(find . -name manifest.json -type f)
+
+          echo "Validated $count manifests"
+
+          if [ "$count" -eq 0 ]; then
+            echo "ERROR: No extension manifests found."
+            exit 1
+          fi
+
+      - name: JavaScript syntax check
+        shell: bash
+        run: |
+          set -e
+
+          while IFS= read -r file; do
+            echo "Checking $file"
+            node --check "$file"
+          done < <(
+            find . -type f -name '*.js' \
+              ! -path './node_modules/*'
+          )
+
+  python:
+    name: Python Validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Compile Python
+        run: |
+          python -m compileall -q .
+
+      - name: Run tests if present
+        shell: bash
+        run: |
+          if find . -type f \
+             \( -name 'test_*.py' -o -name '*_test.py' \) \
+             | grep -q .
+          then
+            pip install pytest
+            pytest -v
+          else
+            echo "No Python tests currently present."
+          fi
+
+  docker:
+    name: Container Smoke Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Locate Dockerfile
+        id: dockerfile
+        shell: bash
+        run: |
+          FILE="$(find . -maxdepth 4 -type f -name Dockerfile | head -1)"
+
+          if [ -z "$FILE" ]; then
+            echo "No Dockerfile found"
+            exit 1
+          fi
+
+          DIR="$(dirname "$FILE")"
+
+          echo "Dockerfile: $FILE"
+          echo "Build context: $DIR"
+
+          echo "context=$DIR" >> "$GITHUB_OUTPUT"
+
+      - name: Build container
+        run: |
+          docker build \
+            -t richmack-browser-ci \
+            "${{ steps.dockerfile.outputs.context }}"
+
+      - name: Start container
+        run: |
+          docker run -d \
+            --name richmack-ci \
+            -p 127.0.0.1:8765:8765 \
+            richmack-browser-ci
+
+      - name: Wait for health
+        shell: bash
+        run: |
+          for i in $(seq 1 30); do
+
+            if curl -fsS \
+              http://127.0.0.1:8765/health
+            then
+              echo
+              echo "Richmack Services healthy."
+              exit 0
+            fi
+
+            echo "Waiting for service..."
+            sleep 2
+          done
+
+          echo "Health check failed."
+
+          docker logs richmack-ci
+
+          exit 1
+
+      - name: Container logs
+        if: always()
+        run: |
+          docker logs richmack-ci || true
+
+      - name: Cleanup
+        if: always()
+        run: |
+          docker rm -f richmack-ci || true
+
+  package:
+    name: Distribution Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check installer
+        shell: bash
+        run: |
+          if [ -f install.sh ]; then
+            bash -n install.sh
+            echo "install.sh syntax OK"
+          else
+            echo "ERROR: install.sh missing"
+            exit 1
+          fi
+
+      - name: Check required documentation
+        shell: bash
+        run: |
+          test -f README.md
+
+          echo "README present."
+
+      - name: Check repository for accidental secrets
+        shell: bash
+        run: |
+          if git grep -nEi \
+            '(aws_secret_access_key|BEGIN (RSA |OPENSSH )?PRIVATE KEY|password[[:space:]]*=[[:space:]]*["'\''][^"'\'']+)' \
+            -- \
+            ':!*.md'
+          then
+            echo
+            echo "Potential secret detected."
+            exit 1
+          fi
+
+          echo "Basic secret scan passed."
