@@ -157,3 +157,25 @@ Chromium / Chrome
 ## Important limitation
 
 This is a **Chromium layer**, not a Chromium source fork. That is intentional: upstream Chromium/Chrome keeps responsibility for browser security patches, while Richmack owns the UI and automation layer.
+
+## v0.2.0 performance / Chromium pass
+
+- Chromium-only launcher on macOS/Linux; no silent Google Chrome fallback.
+- Subtle geometric wolf icon using the existing Richmack blue/cyan/purple palette.
+- Compact side-panel rail mode via the menu button. Chrome still controls the physical side-panel width; compact mode stops rendering the heavy panel content.
+- Collapsible Workspace, Smart Bookmarks, Active Tabs, Downloads, Scan Output and Workflow sections.
+- Active Tabs are loaded only when their section is expanded.
+- Workflow UI is loaded only when Automation is opened.
+- Backend health is checked only when Extract or Terminal is opened; there is no health polling loop.
+- Tab refreshes are event-driven rather than timer-driven.
+- Richmack mode gives brief page feedback and qutebrowser-style letter hints.
+- Safe terminal remains local-service-only and command allowlisted.
+- yt-dlp is pinned to the exact development build that pip advertised as available during the v0.1 install failure.
+
+### macOS Chromium launch
+
+```bash
+./launcher/richmack-browser
+```
+
+The launcher searches `/Applications/Chromium.app/Contents/MacOS/Chromium` first and intentionally refuses to fall back to Google Chrome.

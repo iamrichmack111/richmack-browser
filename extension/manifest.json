@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Richmack Browser OS",
-  "version": "0.1.0",
-  "description": "Dark, keyboard-first Chromium workspace with extraction, smart bookmarks, automation and local tools.",
+  "version": "0.2.0",
+  "description": "Fast, dark, keyboard-first Chromium workspace with collapsible tools, extraction, smart bookmarks, automation and safe local services.",
   "permissions": [
     "activeTab",
     "bookmarks",

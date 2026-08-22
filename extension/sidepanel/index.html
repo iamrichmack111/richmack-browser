@@ -8,55 +8,68 @@
 </head>
 <body>
   <header class="brand">
-    <img src="../icons/icon48.png" alt="Richmack" />
-    <div><strong>RICHMACK</strong><small>BROWSER OS · PRIMAL / FAST / AUTOMATE</small></div>
-    <button id="modeBtn" class="toggle">MODE</button>
+    <img src="../icons/icon48.png" alt="Richmack wolf" />
+    <div class="brandText"><strong>RICHMACK</strong><small>BROWSER OS</small></div>
+    <button id="collapseBtn" class="iconBtn" title="Compact panel">☰</button>
+    <button id="modeBtn" class="modeBtn">MODE OFF</button>
   </header>
 
-  <nav class="tabs">
-    <button data-view="workspace" class="active">Workspace</button>
-    <button data-view="extract">Extract</button>
-    <button data-view="automate">Automate</button>
-    <button data-view="terminal">Terminal</button>
+  <nav class="tabs" aria-label="Richmack tools">
+    <button data-view="workspace" class="active"><span>⌂</span><b>Workspace</b></button>
+    <button data-view="extract"><span>⇩</span><b>Extract</b></button>
+    <button data-view="automate"><span>⚙</span><b>Automate</b></button>
+    <button data-view="terminal"><span>&gt;_</span><b>Terminal</b></button>
   </nav>
 
   <main>
     <section id="workspace" class="view active">
-      <div class="sectionTitle">WORKSPACES <button id="newWorkspace">+</button></div>
-      <div id="workspaceList" class="cards"></div>
-      <div class="sectionTitle">SMART BOOKMARKS <button id="bookmarkCurrent">★</button></div>
-      <div class="toolbar"><input id="bookmarkSearch" placeholder="filter bookmarks" /><select id="bookmarkFilter"><option>All</option><option>Unread</option><option>PDF</option><option>Media</option><option>Research</option></select></div>
-      <div id="bookmarkList" class="list"></div>
-      <div class="sectionTitle">ACTIVE TABS</div>
-      <div id="tabList" class="list"></div>
+      <details open>
+        <summary>WORKSPACES <button id="newWorkspace" class="mini" type="button">+</button></summary>
+        <div id="workspaceList" class="cards"></div>
+      </details>
+
+      <details open>
+        <summary>SMART BOOKMARKS <button id="bookmarkCurrent" class="mini" type="button">★</button></summary>
+        <div class="toolbar"><input id="bookmarkSearch" placeholder="filter bookmarks" /><select id="bookmarkFilter"><option>All</option><option>Unread</option><option>PDF</option><option>Media</option><option>Research</option></select></div>
+        <div id="bookmarkList" class="list"></div>
+      </details>
+
+      <details>
+        <summary>ACTIVE TABS</summary>
+        <div id="tabList" class="list"></div>
+      </details>
     </section>
 
     <section id="extract" class="view">
-      <div class="hero"><h2>EXTRACT ALL</h2><p>Links · images · video · PDF · books · text</p><button id="scanPage" class="primary">Scan Current Page</button></div>
+      <div class="hero"><h2>EXTRACT</h2><p>Links · images · video · PDF · books · text</p><button id="scanPage" class="primary">Scan Current Page</button></div>
       <div id="scanStats" class="stats"></div>
-      <div class="toolbar"><button id="copyLinks">Copy Links</button><button id="downloadImages">Download Images</button><button id="downloadPdfs">Download PDFs</button></div>
-      <div class="toolbar"><button id="downloadVideo" class="accent">Download Page Video</button><button id="saveText">Save Text</button></div>
-      <pre id="extractOutput" class="output">Nothing scanned yet.</pre>
+      <details open><summary>DOWNLOADS</summary>
+        <div class="toolbar"><button id="copyLinks">Copy Links</button><button id="downloadImages">Images</button><button id="downloadPdfs">PDFs</button></div>
+        <div class="toolbar"><button id="downloadVideo" class="accent">Video</button><button id="saveText">Save Text</button></div>
+      </details>
+      <details><summary>SCAN OUTPUT</summary><pre id="extractOutput" class="output">Nothing scanned yet.</pre></details>
     </section>
 
-    <section id="automate" class="view">
-      <div class="warning">Automation is OFF by default. Site access is requested only when you run a workflow.</div>
+    <section id="automate" class="view lazy" data-loaded="false">
+      <div class="notice">Automation is off by default. Access is requested per site when you run an action.</div>
       <label>Selector</label><input id="selector" placeholder="button[type=submit]" />
-      <div class="toolbar"><button id="showSelector">Test Selector</button><button id="clickSelector" class="accent">Click Element</button></div>
-      <label>Workflow name</label><input id="workflowName" placeholder="github-login" />
-      <button id="saveWorkflow" class="primary">Save Click Step</button>
-      <div id="workflowList" class="list"></div>
+      <div class="toolbar"><button id="showSelector">Test</button><button id="clickSelector" class="accent">Click</button></div>
+      <details open><summary>SAVED WORKFLOWS</summary>
+        <label>Workflow name</label><input id="workflowName" placeholder="github-login" />
+        <button id="saveWorkflow" class="primary">Save Click Step</button>
+        <div id="workflowList" class="list"></div>
+      </details>
     </section>
 
-    <section id="terminal" class="view">
-      <div class="warning">Safe Terminal: commands are allowlisted by the local Richmack service. Web pages cannot invoke it directly.</div>
+    <section id="terminal" class="view lazy" data-loaded="false">
+      <div class="notice">Safe Terminal uses a local allowlist. Web pages cannot call it directly.</div>
       <pre id="terminalOutput" class="terminal">richmack@browser:~$ </pre>
       <div class="terminalRow"><input id="terminalInput" placeholder="pwd | ls | git status | whoami" /><button id="runCommand">Run</button></div>
       <div class="chips"><button data-cmd="pwd">pwd</button><button data-cmd="ls">ls</button><button data-cmd="git status">git status</button><button data-cmd="whoami">whoami</button></div>
     </section>
   </main>
 
-  <footer><span id="backendDot">●</span> Backend <span id="backendStatus">checking</span><span class="spacer"></span>v0.1.0</footer>
+  <footer><span id="backendDot">●</span> Backend <span id="backendStatus">idle</span><span class="spacer"></span>v0.2.0</footer>
   <script type="module" src="app.js"></script>
 </body>
 </html>

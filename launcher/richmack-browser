@@ -6,18 +6,26 @@ EXT="${ROOT}/extension"
 mkdir -p "$PROFILE"
 
 find_chromium() {
-  for c in "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
-           "/Applications/Chromium.app/Contents/MacOS/Chromium" \
-           google-chrome chromium chromium-browser; do
-    if [[ -x "$c" ]]; then printf '%s\n' "$c"; return 0; fi
-    if command -v "$c" >/dev/null 2>&1; then command -v "$c"; return 0; fi
+  local candidates=(
+    "/Applications/Chromium.app/Contents/MacOS/Chromium"
+    "$HOME/Applications/Chromium.app/Contents/MacOS/Chromium"
+  )
+  for c in "${candidates[@]}"; do
+    [[ -x "$c" ]] && { printf '%s\n' "$c"; return 0; }
+  done
+  for c in chromium chromium-browser; do
+    command -v "$c" >/dev/null 2>&1 && { command -v "$c"; return 0; }
   done
   return 1
 }
 
 BROWSER="${RICHMACK_CHROMIUM:-$(find_chromium || true)}"
 if [[ -z "$BROWSER" ]]; then
-  echo "Richmack Browser: Chromium/Chrome not found." >&2
+  cat >&2 <<'MSG'
+Richmack Browser: Chromium was not found.
+macOS Homebrew install: brew install --cask chromium
+Richmack intentionally does not fall back to Google Chrome.
+MSG
   exit 1
 fi
 
@@ -27,4 +35,5 @@ exec "$BROWSER" \
   --no-first-run \
   --disable-sync \
   --disable-background-networking \
+  --disable-component-update \
   "$@"
