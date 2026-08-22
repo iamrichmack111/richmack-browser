@@ -1,4 +1,4 @@
-# Richmack Browser OS v0.5.0
+# Richmack Browser OS v0.5.1
 
 Richmack v0.5 changes the interface from one large extension popup to a **suite of small native Chromium toolbar extensions**. The browser keeps native Chromium tabs and security updates, while the Richmack layer supplies its own dark new-tab experience, keyboard mode, extraction tools, automation helpers, and local RSS/media services.
 
@@ -32,8 +32,8 @@ The mode content script is deliberately tiny and event-driven: no page polling, 
 
 ```bash
 cd ~/Downloads
-unzip richmack-browser-v0.5.0.zip
-cd richmack-browser-v0.5.0
+unzip richmack-browser-v0.5.1.zip
+cd richmack-browser-v0.5.1
 ./install.sh
 ```
 
