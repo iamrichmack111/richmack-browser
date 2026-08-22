@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Richmack Browser
+Comment=Dark Chromium profile with Richmack extraction, feeds and automation
+Exec=__INSTALL_ROOT__/launcher/richmack-browser
+Icon=__INSTALL_ROOT__/assets/richmack-browser-256.png
+Terminal=false
+Categories=Network;WebBrowser;
+StartupNotify=true
