@@ -86,14 +86,13 @@ jobs:
         run: docker build -t richmack-browser-services:ci ./services
       - name: Run hardened container
         run: |
-          mkdir -p "$RUNNER_TEMP/richmack-downloads"
           docker run -d \
             --name richmack-ci \
             --read-only \
             --cap-drop ALL \
             --security-opt no-new-privileges:true \
             --tmpfs /tmp:rw,noexec,nosuid,nodev,size=128m \
-            -v "$RUNNER_TEMP/richmack-downloads:/downloads" \
+            --tmpfs /downloads:rw,nosuid,nodev,size=256m,uid=10001,gid=10001 \
             -p 127.0.0.1:8765:8765 \
             richmack-browser-services:ci
       - name: Health check
