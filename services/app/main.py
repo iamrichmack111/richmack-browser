@@ -37,6 +37,13 @@ class FeedRequest(BaseModel):
     title: str = Field(min_length=1, max_length=300)
     items: list[FeedItem] = Field(min_length=1, max_length=100)
 
+class PickedState(BaseModel):
+    selector: str = Field(min_length=1, max_length=1000)
+    text: str = Field(default="", max_length=1000)
+    url: str = Field(default="", max_length=4096)
+
+PICKED_STATE: dict[str, str] = {}
+
 
 def safe_http_url(value: str) -> str:
     u = urlparse(value)
@@ -65,7 +72,27 @@ def health():
         "status": "ok",
         "download_root": str(DOWNLOAD_ROOT),
         "feeds": True,
+        "suite": "0.5.0",
+        "shared_picker": True,
     }
+
+
+@app.post("/state/picked")
+def set_picked(req: PickedState):
+    PICKED_STATE.clear()
+    PICKED_STATE.update({"selector": req.selector, "text": req.text, "url": req.url})
+    return {"ok": True}
+
+
+@app.get("/state/picked")
+def get_picked():
+    return {"ok": True, "picked": PICKED_STATE or None}
+
+
+@app.delete("/state/picked")
+def clear_picked():
+    PICKED_STATE.clear()
+    return {"ok": True}
 
 
 @app.post("/media/download")

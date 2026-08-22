@@ -1,38 +1,19 @@
 #!/usr/bin/env bash
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-PROFILE="${HOME}/.richmack/browser-profile"
-EXT="${ROOT}/extension"
-mkdir -p "$PROFILE"
-
-find_chromium() {
-  local candidates=(
-    "/Applications/Chromium.app/Contents/MacOS/Chromium"
-    "$HOME/Applications/Chromium.app/Contents/MacOS/Chromium"
-  )
-  for c in "${candidates[@]}"; do
-    [[ -x "$c" ]] && { printf '%s\n' "$c"; return 0; }
-  done
-  for c in chromium chromium-browser; do
-    command -v "$c" >/dev/null 2>&1 && { command -v "$c"; return 0; }
-  done
-  return 1
-}
-
-BROWSER="${RICHMACK_CHROMIUM:-$(find_chromium || true)}"
-if [[ -z "$BROWSER" ]]; then
-  cat >&2 <<'MSG'
-Richmack Browser: Chromium was not found.
-macOS Homebrew install: brew install --cask chromium
-Richmack intentionally does not fall back to Google Chrome.
-MSG
+CHROMIUM="/Applications/Chromium.app/Contents/MacOS/Chromium"
+if [ ! -x "$CHROMIUM" ]; then
+  echo "Richmack Browser requires Chromium at /Applications/Chromium.app"
+  echo "Install it with: brew install --cask chromium"
   exit 1
 fi
-
-exec "$BROWSER" \
+PROFILE="$HOME/.richmack/browser-profile-v050"
+mkdir -p "$PROFILE"
+EXTS="$(printf '%s,' "$ROOT"/extensions/* | sed 's/,$//')"
+exec "$CHROMIUM" \
   --user-data-dir="$PROFILE" \
-  --load-extension="$EXT" \
+  --load-extension="$EXTS" \
+  --disable-extensions-except="$EXTS" \
   --no-first-run \
   --no-default-browser-check \
-  --disable-sync \
   "$@"

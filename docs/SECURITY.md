@@ -1,13 +1,9 @@
-# Richmack Browser OS security model
+# Richmack Browser OS v0.5 Security Notes
 
-- Chromium stays upstream; Richmack does not patch Chromium's security engine.
-- Backend binds only to `127.0.0.1:8765`.
-- No terminal or arbitrary shell endpoint.
-- Docker container runs non-root, drops Linux capabilities, uses no-new-privileges, and has a read-only root filesystem.
-- Downloads and generated feeds are confined to the mounted Richmack Downloads directory.
-- Page scripts cannot directly execute local commands.
-- Page access is injected only after a user action or keyboard-mode action.
-- Persistent site access remains optional.
-- Automation requires user-triggered element picking or a text search followed by selection of a specific match.
-- Native feed detection only reads the current page. Generated RSS does not recursively crawl linked pages.
-- Media downloads allow HTTP/S URLs only and invoke yt-dlp without shell execution.
+Richmack intentionally keeps Chromium upstream rather than forking its rendering/security engine. The eight toolbar extensions are separated by capability so a simple page tool does not automatically inherit every Richmack permission.
+
+The local FastAPI service binds to loopback only. Docker uses a read-only root filesystem, drops Linux capabilities, applies `no-new-privileges`, limits CPU/memory/PIDs, and mounts only `~/Downloads/Richmack` writable. No Docker socket, SSH keys, home directory, browser cookies, or shell are mounted.
+
+Automation is intentionally user-driven. Pick mode saves only a selector, label and source URL. Automate searches visible interactive elements and asks for confirmation before clicking. It does not silently bulk-follow accounts or bulk-submit applications.
+
+The Richmack Core content script registers lightweight keyboard listeners on HTTP/S pages. Extraction scripts are injected on demand only when a toolbar tool is used.

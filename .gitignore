@@ -1,7 +1,5 @@
 .DS_Store
 __pycache__/
 *.pyc
-.env
-browser-profile/
 data/*
 !data/.gitkeep

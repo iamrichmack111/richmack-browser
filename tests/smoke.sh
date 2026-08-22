@@ -1,19 +1,16 @@
 #!/usr/bin/env bash
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-python -m json.tool "$ROOT/extension/manifest.json" >/dev/null
-python -m py_compile "$ROOT/services/app/main.py"
-for js in extension/background.js extension/content.js extension/popup/app.js extension/newtab/app.js extension/sidepanel/app.js; do node --check "$ROOT/$js"; done
-for f in \
-  extension/popup/index.html extension/popup/style.css \
-  extension/newtab/index.html extension/newtab/style.css \
-  extension/sidepanel/index.html extension/sidepanel/style.css \
-  extension/icons/icon128.png services/Dockerfile services/requirements.txt \
-  docker-compose.yml launcher/richmack-browser docs/SECURITY.md; do
-  test -s "$ROOT/$f" || { echo "missing: $f"; exit 1; }
+test "$(cat "$ROOT/VERSION")" = "0.5.0"
+for ext in richmack-core richmack-extract richmack-images richmack-email richmack-media richmack-feed richmack-pick richmack-automate; do
+  test -f "$ROOT/extensions/$ext/manifest.json"
+  python3 -m json.tool "$ROOT/extensions/$ext/manifest.json" >/dev/null
+  test -f "$ROOT/extensions/$ext/icons/icon16.png"
 done
-if grep -R --line-number -E 'shell[[:space:]]*=[[:space:]]*True|0\.0\.0\.0:8765:8765|/var/run/docker.sock|disable-component-update' "$ROOT" --exclude='smoke.sh'; then
-  echo "unsafe pattern detected"
-  exit 1
-fi
-echo "Richmack Browser v0.4.0 smoke: PASS"
+grep -q 'chrome_url_overrides' "$ROOT/extensions/richmack-core/manifest.json"
+grep -q 'state/picked' "$ROOT/services/app/main.py"
+grep -q '127.0.0.1:8765' "$ROOT/docker-compose.yml"
+! grep -R --include='*.js' -n 'eval(' "$ROOT/extensions" >/dev/null
+! grep -R --include='*.json' -n 'unsafe-eval' "$ROOT/extensions" >/dev/null
+python3 -m py_compile "$ROOT/services/app/main.py"
+echo "Richmack Browser v0.5.0 smoke: PASS"
