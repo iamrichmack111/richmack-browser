@@ -1,18 +1,18 @@
-# Richmack Browser OS v0.5.4
+# Richmack Browser OS v0.5.5
 
 Richmack Browser is a dedicated Chromium profile plus eight small native-toolbar extensions. It keeps Chromium's native tabs/security update path while adding a dark Richmack identity, qutebrowser-style keyboard control, extraction/media/feed tools, and user-directed browser automation.
 
-## v0.5.4 changes
+## v0.5.5 changes
 
 ### Dark Chromium by default
 
 The launcher now starts Chromium with `--force-dark-mode` and `WebUIDarkMode`. Richmack's new-tab page and every Richmack tool remain dark as well.
 
-### Individual toolbar icons, pinned by default on the fresh v0.5.4 profile
+### Individual toolbar icons, pinned by default on the fresh v0.5.5 profile
 
-The eight tools remain separate native Chromium actions: **Core · Extract · Images · Email · Media · Feed · Pick · Automate**. Chromium itself owns the toolbar, so Richmack cannot call an extension API to pin itself after startup. Instead, the dedicated v0.5.4 profile is seeded with Chromium's own `extensions.pinned_by_default` preference before first launch. Chromium source defines this preference specifically as whether new extensions should be pinned by default.
+The eight tools remain separate native Chromium actions: **Core · Extract · Images · Email · Media · Feed · Pick · Automate**. Chromium itself owns the toolbar, so Richmack cannot call an extension API to pin itself after startup. Instead, the dedicated v0.5.5 profile is seeded with Chromium's own `extensions.pinned_by_default` preference before first launch. Chromium source defines this preference specifically as whether new extensions should be pinned by default.
 
-The v0.5.4 launcher uses `~/.richmack/browser-profile-v054`, leaving older Richmack profiles untouched. Once Chromium has created the profile, it remembers toolbar state normally.
+The v0.5.5 launcher uses `~/.richmack/browser-profile-v054`, leaving older Richmack profiles untouched. Once Chromium has created the profile, it remembers toolbar state normally.
 
 ### Automation recorder/replayer
 
@@ -56,12 +56,12 @@ Toggle from Core or `Command+Shift+Space` on macOS.
 
 ```bash
 cd ~/Downloads
-unzip richmack-browser-v0.5.4.zip
-cd richmack-browser-v0.5.4
+unzip richmack-browser-v0.5.5.zip
+cd richmack-browser-v0.5.5
 ./install.sh
 ```
 
-Chromium must already be installed at `/Applications/Chromium.app`. The installer starts/updates the localhost backend when Docker is available and launches the dedicated v0.5.4 Richmack profile.
+Chromium must already be installed at `/Applications/Chromium.app`. The installer starts/updates the localhost backend when Docker is available and launches the dedicated v0.5.5 Richmack profile.
 
 ## RSS / Newsboat
 
@@ -82,3 +82,9 @@ Newsboat running on the same Mac can subscribe to those URLs directly. Native RS
 - Replay stops at secret fields and flagged final/consequential actions.
 - Downloads remain sandboxed to `~/Downloads/Richmack`.
 - No recursive site crawling by default.
+
+## v0.5.5 bulk sequence automation
+
+Automate can now find every visible control whose accessible label matches a phrase such as `Follow`, preview those matches, and run the same action sequentially. The default cap is 10 actions per run, adjustable from 1–25, with a 1–10 second delay between actions. Exact label matching is enabled by default so `Follow` does not accidentally match `Following`. The engine re-queries the live DOM after each click, which is more reliable on dynamic social/job pages than replaying a stale list of CSS selectors. A Stop button cancels the sequence after the current click.
+
+Bulk sequence is intentionally limited to the currently rendered page state and requires a confirmation before each run. It does not auto-scroll an infinite feed, bypass CAPTCHAs, or override site rate limits.

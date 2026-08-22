@@ -8,7 +8,7 @@ if [ ! -x "$CHROMIUM" ]; then
   exit 1
 fi
 
-# New v0.5.4 profile keeps Richmack independent and lets us seed first-run prefs.
+# Reuse the established v0.5.4+ Richmack profile so sessions, logins and pin state survive upgrades.
 PROFILE="$HOME/.richmack/browser-profile-v054"
 DEFAULT="$PROFILE/Default"
 PREFS="$DEFAULT/Preferences"
