@@ -1,1 +1,8 @@
-<!doctype html><meta charset="utf-8"><link rel="stylesheet" href="style.css"><main><header><img src="../icons/icon48.png"><div><b>AUTOMATE</b><small>confirm before click</small></div></header><input id="q" placeholder="Easy Apply, Follow, Next…"><button id="find">Find controls</button><div id="results"></div><hr><div class="muted">Picked target</div><pre id="picked">None</pre><button id="runPicked">Click picked target</button></main><script src="app.js"></script>
+<!doctype html><meta charset="utf-8"><link rel="stylesheet" href="style.css"><main>
+<header><img src="../icons/icon48.png"><div><b>AUTOMATE</b><small>record · replay · confirm final actions</small></div></header>
+<section class="record"><div class="row"><button id="record">● Record</button><button id="stop" disabled>■ Stop</button></div><div id="recStatus" class="muted">Not recording</div></section>
+<input id="workflowName" placeholder="Workflow name"><button id="save" disabled>Save recorded workflow</button>
+<div class="section-title">Saved workflows</div><div id="workflows"></div>
+<hr>
+<div class="section-title">Quick control</div><input id="q" placeholder="Easy Apply, Follow, Next…"><button id="find">Find controls</button><div id="results"></div>
+</main><script src="app.js"></script>

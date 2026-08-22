@@ -1,12 +1,13 @@
 {
   "manifest_version": 3,
   "name": "Richmack Automate",
-  "version": "0.5.3",
-  "description": "Find and click selected page controls with user confirmation",
+  "version": "0.5.4",
+  "description": "Record, save, replay, and safely run page-control workflows.",
   "permissions": [
     "activeTab",
     "scripting",
-    "storage"
+    "storage",
+    "tabs"
   ],
   "host_permissions": [
     "http://127.0.0.1:8765/*"
@@ -28,5 +29,9 @@
     "32": "icons/icon32.png",
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
-  }
+  },
+  "optional_host_permissions": [
+    "http://*/*",
+    "https://*/*"
+  ]
 }

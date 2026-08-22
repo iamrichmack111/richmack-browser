@@ -1,64 +1,91 @@
 (() => {
-  if (globalThis.__RM_V050_PAGE_TOOLS__) return;
-  globalThis.__RM_V050_PAGE_TOOLS__ = true;
+  if (globalThis.__RM_AUTOMATE_V054__) return;
+  globalThis.__RM_AUTOMATE_V054__ = true;
 
-  const visible = el => {
-    const r = el.getBoundingClientRect();
-    const st = getComputedStyle(el);
-    return r.width > 2 && r.height > 2 && st.visibility !== 'hidden' && st.display !== 'none';
-  };
-  const cleanText = s => (s || '').replace(/\s+/g, ' ').trim();
-  const unique = xs => [...new Set(xs.filter(Boolean))];
-  const abs = raw => { try { return new URL(raw, location.href).href; } catch { return null; } };
-  const selectorFor = el => {
-    if (el.id) return `#${CSS.escape(el.id)}`;
-    const tag = el.tagName.toLowerCase();
-    const attrs = ['aria-label','name','title','type'].map(a => el.getAttribute(a) ? `[${a}="${CSS.escape(el.getAttribute(a))}"]` : '').join('');
-    if (attrs) return `${tag}${attrs}`;
-    const cls = [...el.classList].slice(0,2).map(c => `.${CSS.escape(c)}`).join('');
-    if (cls) return `${tag}${cls}`;
-    let n=1, p=el; while ((p=p.previousElementSibling)) if (p.tagName===el.tagName) n++;
+  let recording=false;
+  let listeners=false;
+  const clean=s=>(s||'').replace(/\s+/g,' ').trim();
+  const visible=el=>{const r=el.getBoundingClientRect(),st=getComputedStyle(el);return r.width>2&&r.height>2&&st.visibility!=='hidden'&&st.display!=='none';};
+  const selectorFor=el=>{
+    if(el.id) return `#${CSS.escape(el.id)}`;
+    const test=el.getAttribute('data-testid'); if(test) return `[data-testid="${CSS.escape(test)}"]`;
+    const aria=el.getAttribute('aria-label'); if(aria) return `${el.tagName.toLowerCase()}[aria-label="${CSS.escape(aria)}"]`;
+    const name=el.getAttribute('name'); if(name) return `${el.tagName.toLowerCase()}[name="${CSS.escape(name)}"]`;
+    const tag=el.tagName.toLowerCase();
+    const classes=[...el.classList].filter(c=>!/active|selected|hover|focus/i.test(c)).slice(0,2).map(c=>`.${CSS.escape(c)}`).join('');
+    if(classes) return `${tag}${classes}`;
+    let n=1,p=el; while((p=p.previousElementSibling)) if(p.tagName===el.tagName)n++;
     return `${tag}:nth-of-type(${n})`;
   };
-  const scan = () => {
-    const links = unique([...document.querySelectorAll('a[href]')].map(a => abs(a.getAttribute('href'))));
-    const images = unique([...document.images].map(i => abs(i.currentSrc || i.src)));
-    const emails = unique([
-      ...[...document.querySelectorAll('a[href^="mailto:"]')].map(a => a.href.replace(/^mailto:/i,'').split('?')[0]),
-      ...(document.body?.innerText || '').match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi) || []
-    ].map(x => x.toLowerCase()));
-    const pdfs = links.filter(u => /\.pdf(?:$|[?#])/i.test(u));
-    const files = links.filter(u => /\.(?:epub|txt|md|csv|json|zip|docx?|xlsx?|pptx?)(?:$|[?#])/i.test(u));
-    const video = unique([...document.querySelectorAll('video source[src],video[src],a[href]')].map(el => abs(el.src || el.href)).filter(u => u && /\.(?:mp4|webm|mov|m4v)(?:$|[?#])/i.test(u)));
-    const audio = unique([...document.querySelectorAll('audio source[src],audio[src],a[href]')].map(el => abs(el.src || el.href)).filter(u => u && /\.(?:mp3|m4a|ogg|wav|flac)(?:$|[?#])/i.test(u)));
-    return {url:location.href,title:document.title,links,images,emails,pdfs,files,video,audio,text:cleanText(document.body?.innerText || '')};
-  };
-  const detectFeeds = () => {
-    const feeds=[...document.querySelectorAll('link[rel="alternate"][type]')]
-      .filter(x => /rss|atom|json\+feed/i.test(x.type || ''))
-      .map(x => ({title:x.title || x.type,url:abs(x.href),type:x.type}));
-    const items=[...document.querySelectorAll('article a[href],main a[href],h1 a[href],h2 a[href],h3 a[href]')]
-      .filter(visible).map(a => ({title:cleanText(a.textContent),url:abs(a.href)}))
-      .filter(x => x.title.length >= 8 && x.url && x.url.startsWith('http'));
-    const seen=new Set();
-    return {url:location.href,title:document.title,feeds,items:items.filter(x => !seen.has(x.url) && seen.add(x.url)).slice(0,100)};
-  };
-  function toast(text){const old=document.getElementById('rm-v050-toast');old?.remove();const el=document.createElement('div');el.id='rm-v050-toast';el.textContent=text;Object.assign(el.style,{position:'fixed',right:'18px',bottom:'18px',zIndex:2147483647,background:'#07111c',color:'#91e6ff',border:'1px solid #2478b3',borderRadius:'8px',padding:'8px 11px',font:'600 12px system-ui',boxShadow:'0 8px 30px #0009'});document.documentElement.appendChild(el);setTimeout(()=>el.remove(),1400);}
-  function picker(){
-    let active=true,last=null;
-    const move=e=>{if(!active)return;if(last)last.style.outline=last.dataset.rmOldOutline||'';last=e.target;last.dataset.rmOldOutline=last.style.outline||'';last.style.outline='2px solid #55d8ff';e.stopPropagation();};
-    const click=e=>{if(!active)return;e.preventDefault();e.stopPropagation();active=false;if(last)last.style.outline=last.dataset.rmOldOutline||'';const payload={selector:selectorFor(e.target),text:cleanText(e.target.innerText||e.target.value||e.target.getAttribute('aria-label')||''),url:location.href};chrome.runtime.sendMessage({type:'RM_PICKED',...payload}).catch(()=>{});cleanup();toast(`Saved: ${payload.text || payload.selector}`);};
-    const key=e=>{if(e.key==='Escape'){active=false;cleanup();toast('Picker cancelled');}};
-    const cleanup=()=>{document.removeEventListener('mousemove',move,true);document.removeEventListener('click',click,true);document.removeEventListener('keydown',key,true);};
-    document.addEventListener('mousemove',move,true);document.addEventListener('click',click,true);document.addEventListener('keydown',key,true);toast('Pick an element · Esc cancels');
+  const labelFor=el=>clean(el.innerText||el.value||el.getAttribute('aria-label')||el.getAttribute('title')||el.getAttribute('name')||'');
+  const semantic={selector:null,text:null,role:null,tag:null};
+  const describe=el=>({selector:selectorFor(el),text:labelFor(el).slice(0,160),role:el.getAttribute('role')||'',tag:el.tagName.toLowerCase()});
+  const emit=step=>chrome.runtime.sendMessage({type:'RM_RECORD_EVENT',step}).catch(()=>{});
+
+  function clickCapture(e){
+    if(!recording || !e.isTrusted) return;
+    const el=e.target.closest('button,a[href],input[type=button],input[type=submit],[role=button]');
+    if(!el||!visible(el)) return;
+    const d=describe(el);
+    const text=d.text.toLowerCase();
+    const finalAction=/submit|place order|purchase|buy now|send|post|confirm application/i.test(d.text) || (el.type==='submit' && !/next|continue|review/i.test(d.text));
+    emit({action:'click',...d,confirm:finalAction,url:location.href});
   }
-  function findActions(q){const query=q.toLowerCase().trim();return [...document.querySelectorAll('button,a[href],input[type=button],input[type=submit],[role=button]')].filter(visible).map(el=>({text:cleanText(el.innerText||el.value||el.getAttribute('aria-label')||el.title||''),selector:selectorFor(el),tag:el.tagName.toLowerCase()})).filter(x=>x.text.toLowerCase().includes(query)).slice(0,30);}
+  function changeCapture(e){
+    if(!recording || !e.isTrusted) return;
+    const el=e.target;
+    if(!(el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement || el instanceof HTMLSelectElement)) return;
+    if(el.type==='password') { emit({action:'secret',selector:selectorFor(el),text:labelFor(el),url:location.href}); return; }
+    if(['checkbox','radio'].includes(el.type)) emit({action:'check',selector:selectorFor(el),checked:el.checked,text:labelFor(el),url:location.href});
+    else emit({action:'fill',selector:selectorFor(el),value:el.value,text:labelFor(el),url:location.href});
+  }
+  function attach(){if(listeners)return;listeners=true;document.addEventListener('click',clickCapture,true);document.addEventListener('change',changeCapture,true);}
+  function detach(){if(!listeners)return;listeners=false;document.removeEventListener('click',clickCapture,true);document.removeEventListener('change',changeCapture,true);}
+
+  async function waitFor(step,timeout=10000){
+    const start=Date.now();
+    while(Date.now()-start<timeout){
+      let el=null; try{el=document.querySelector(step.selector);}catch{}
+      if(el&&visible(el)) return el;
+      // selector fallback by semantic text
+      if(step.text){
+        const candidates=[...document.querySelectorAll('button,a[href],input,[role=button]')].filter(visible);
+        el=candidates.find(x=>labelFor(x)===step.text)||candidates.find(x=>labelFor(x).includes(step.text));
+        if(el) return el;
+      }
+      await new Promise(r=>setTimeout(r,250));
+    }
+    throw new Error(`Timed out: ${step.text||step.selector}`);
+  }
+  async function runSteps(steps){
+    for(let i=0;i<steps.length;i++){
+      const step=steps[i];
+      if(step.action==='secret') return {ok:false,stopped:true,index:i,reason:'Secret/password field requires manual entry'};
+      if(step.confirm) return {ok:false,stopped:true,index:i,reason:`Confirmation required before: ${step.text||'final action'}`};
+      const el=await waitFor(step);
+      el.scrollIntoView({block:'center',behavior:'instant'});
+      if(step.action==='click'){el.click();await new Promise(r=>setTimeout(r,800));}
+      else if(step.action==='fill'){
+        el.focus(); el.value=step.value??''; el.dispatchEvent(new Event('input',{bubbles:true})); el.dispatchEvent(new Event('change',{bubbles:true}));
+      } else if(step.action==='check'){
+        if(el.checked!==step.checked) el.click();
+      }
+    }
+    return {ok:true};
+  }
+  function findActions(q){const query=(q||'').toLowerCase().trim();return [...document.querySelectorAll('button,a[href],input[type=button],input[type=submit],[role=button]')].filter(visible).map(describe).filter(x=>x.text.toLowerCase().includes(query)).slice(0,50);}
+
   chrome.runtime.onMessage.addListener((m,s,send)=>{
-    if(m?.type==='RM_SCAN') send(scan());
-    else if(m?.type==='RM_FEEDS') send(detectFeeds());
-    else if(m?.type==='RM_PICK'){picker();send({ok:true});}
-    else if(m?.type==='RM_FIND') send({matches:findActions(m.query||'')});
-    else if(m?.type==='RM_CLICK'){try{const el=document.querySelector(m.selector);if(!el){send({ok:false,error:'not found'});return true;}el.click();send({ok:true});}catch(e){send({ok:false,error:e.message});}}
+    (async()=>{
+      if(m?.type==='RM_RECORD_START'){recording=true;attach();return send({ok:true});}
+      if(m?.type==='RM_RECORD_STOP'){recording=false;detach();return send({ok:true});}
+      if(m?.type==='RM_FIND') return send({matches:findActions(m.query||'')});
+      if(m?.type==='RM_CLICK'){
+        const el=await waitFor({selector:m.selector,text:m.text}); el.click(); return send({ok:true});
+      }
+      if(m?.type==='RM_RUN_WORKFLOW') return send(await runSteps(m.steps||[]));
+      send({ok:true});
+    })().catch(e=>send({ok:false,error:e.message}));
     return true;
   });
 })();
