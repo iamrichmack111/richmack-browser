@@ -64,7 +64,7 @@ fi
 
 # Backend is optional; browser/extension tools still work without Docker.
 HEALTH="$(curl -fsS --max-time 1 http://127.0.0.1:8765/health 2>/dev/null || true)"
-if printf '%s' "$HEALTH" | grep -q '"suite":"0.6.0"'; then
+if printf '%s' "$HEALTH" | grep -q '"suite":"0.6.1"'; then
   echo "Backend: already ready"
 elif command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1; then
   echo "Backend: starting/updating local service"
