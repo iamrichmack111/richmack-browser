@@ -16,4 +16,4 @@ if grep -R --line-number -E 'shell[[:space:]]*=[[:space:]]*True|0\.0\.0\.0:8765:
   echo "unsafe pattern detected"
   exit 1
 fi
-echo "Richmack Browser v0.3.0 smoke: PASS"
+echo "Richmack Browser v0.4.0 smoke: PASS"

@@ -14,12 +14,13 @@
   </header>
 
   <section class="quick" aria-label="Quick actions">
+    <button id="command" title="Open Richmack command bar"><span>:</span><b>Command</b></button>
     <button id="extract" title="Scan page"><span>⌁</span><b>Extract</b></button>
     <button id="images" title="Download page images"><span>▧</span><b>Images</b></button>
     <button id="media" title="Download current media URL"><span>⇩</span><b>Media</b></button>
+    <button id="feed" title="Detect or create RSS feed"><span>☊</span><b>Feed</b></button>
     <button id="pick" title="Pick a button or link to automate"><span>◎</span><b>Pick</b></button>
     <button id="bookmark" title="Smart bookmark"><span>★</span><b>Save</b></button>
-    <button id="panel" title="Open detailed tools"><span>⋯</span><b>More</b></button>
   </section>
 
   <section class="resource" id="resource" hidden>
@@ -30,6 +31,23 @@
   <section>
     <div class="sectionHead"><span>WORKSPACE</span><button id="assign">Assign tab</button></div>
     <div id="workspaces" class="workspaces"></div>
+  </section>
+
+  <section id="feedPanel" hidden>
+    <div class="sectionHead"><span>FEED</span><button id="closeFeed">×</button></div>
+    <div id="feedStatus" class="muted">Checking this page…</div>
+    <div id="nativeFeeds" class="feedList"></div>
+    <div class="resultActions">
+      <button id="copyFeed" disabled>Copy feed URL</button>
+      <button id="generateFeed">Generate RSS</button>
+    </div>
+    <small class="hint">Generated feeds are served only from your local Richmack service.</small>
+  </section>
+
+  <section id="actionPanel" hidden>
+    <div class="sectionHead"><span>FIND BUTTON / LINK</span><button id="closeActions">×</button></div>
+    <div class="searchRow"><input id="actionQuery" placeholder="Easy Apply, Follow, Download…" /><button id="findAction">Find</button></div>
+    <div id="actionResults" class="actionResults"></div>
   </section>
 
   <section id="results" hidden>
@@ -43,6 +61,7 @@
     <div class="resultActions">
       <button id="copyEmails">Copy emails</button>
       <button id="saveText">Save text</button>
+      <button id="openActions">Find button</button>
     </div>
   </section>
 
@@ -53,7 +72,7 @@
     <button id="runPicked" class="primary">Click saved target</button>
   </section>
 
-  <footer><span id="dot">●</span><span id="status">Ready</span><span class="spacer"></span>v0.3.0</footer>
+  <footer><span id="dot">●</span><span id="status">Ready</span><span class="spacer"></span>v0.4.0</footer>
   <script type="module" src="app.js"></script>
 </body>
 </html>

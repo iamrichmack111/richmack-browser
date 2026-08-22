@@ -1,18 +1,23 @@
 from __future__ import annotations
 
+import hashlib
+import html
 import os
 import subprocess
+from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import urlparse
 
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import Response
 from pydantic import BaseModel, Field
 
 APP_NAME = "Richmack Browser Services"
 DOWNLOAD_ROOT = Path(os.environ.get("RICHMACK_DOWNLOADS", "/downloads")).resolve()
 WORK_ROOT = Path(os.environ.get("RICHMACK_WORKDIR", "/workspace")).resolve()
+FEED_ROOT = (DOWNLOAD_ROOT / "feeds").resolve()
 DOWNLOAD_ROOT.mkdir(parents=True, exist_ok=True)
-WORK_ROOT.mkdir(parents=True, exist_ok=True)
+FEED_ROOT.mkdir(parents=True, exist_ok=True)
 
 app = FastAPI(title=APP_NAME, docs_url=None, redoc_url=None)
 
@@ -21,6 +26,16 @@ class MediaRequest(BaseModel):
 
 class DocumentRequest(BaseModel):
     relative_path: str = Field(min_length=1, max_length=512)
+
+class FeedItem(BaseModel):
+    title: str = Field(min_length=1, max_length=300)
+    url: str = Field(min_length=8, max_length=4096)
+    summary: str = Field(default="", max_length=2000)
+
+class FeedRequest(BaseModel):
+    source_url: str = Field(min_length=8, max_length=4096)
+    title: str = Field(min_length=1, max_length=300)
+    items: list[FeedItem] = Field(min_length=1, max_length=100)
 
 
 def safe_http_url(value: str) -> str:
@@ -39,12 +54,17 @@ def inside_downloads(relative: str) -> Path:
     return candidate
 
 
+def xml_text(value: str) -> str:
+    return html.escape(value or "", quote=False)
+
+
 @app.get("/health")
 def health():
     return {
         "app": APP_NAME,
         "status": "ok",
         "download_root": str(DOWNLOAD_ROOT),
+        "feeds": True,
     }
 
 
@@ -102,3 +122,61 @@ def analyze_document(req: DocumentRequest):
         "characters": len(text),
         "preview": text[:20000],
     }
+
+
+@app.post("/feeds/generate")
+def generate_feed(req: FeedRequest):
+    source = safe_http_url(req.source_url)
+    cleaned = []
+    seen = set()
+    for item in req.items:
+        url = safe_http_url(item.url)
+        if url in seen:
+            continue
+        seen.add(url)
+        cleaned.append((item.title.strip(), url, item.summary.strip()))
+        if len(cleaned) >= 60:
+            break
+    if not cleaned:
+        raise HTTPException(status_code=400, detail="No valid feed items")
+    slug = hashlib.sha256(source.encode("utf-8")).hexdigest()[:16]
+    filename = f"richmack-{slug}.xml"
+    now = datetime.now(timezone.utc).strftime("%a, %d %b %Y %H:%M:%S +0000")
+    items_xml = []
+    for title, url, summary in cleaned:
+        items_xml.append(
+            "<item>"
+            f"<title>{xml_text(title)}</title>"
+            f"<link>{xml_text(url)}</link>"
+            f"<guid isPermaLink=\"true\">{xml_text(url)}</guid>"
+            f"<description>{xml_text(summary)}</description>"
+            f"<pubDate>{now}</pubDate>"
+            "</item>"
+        )
+    xml = (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<rss version="2.0"><channel>'
+        f"<title>{xml_text(req.title)}</title>"
+        f"<link>{xml_text(source)}</link>"
+        f"<description>Generated locally by Richmack Browser from {xml_text(source)}</description>"
+        f"<lastBuildDate>{now}</lastBuildDate>"
+        + "".join(items_xml)
+        + "</channel></rss>"
+    )
+    (FEED_ROOT / filename).write_text(xml, encoding="utf-8")
+    return {
+        "ok": True,
+        "name": filename,
+        "items": len(cleaned),
+        "feed_url": f"http://127.0.0.1:8765/feeds/{filename}",
+    }
+
+
+@app.get("/feeds/{filename}")
+def read_feed(filename: str):
+    if not filename.startswith("richmack-") or not filename.endswith(".xml") or "/" in filename or "\\" in filename:
+        raise HTTPException(status_code=404, detail="Feed not found")
+    path = (FEED_ROOT / filename).resolve()
+    if path.parent != FEED_ROOT or not path.is_file():
+        raise HTTPException(status_code=404, detail="Feed not found")
+    return Response(path.read_text(encoding="utf-8"), media_type="application/rss+xml; charset=utf-8")

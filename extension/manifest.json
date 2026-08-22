@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Richmack Browser OS",
-  "version": "0.3.0",
-  "description": "A subtle, toolbar-first Richmack layer for Chromium with workspaces, smart bookmarks, extraction and safe browser automation.",
+  "version": "0.4.0",
+  "description": "A toolbar-first Richmack layer for Chromium with qutebrowser controls, workspaces, extraction, safe click automation, and RSS/feed tools.",
   "permissions": [
     "activeTab",
     "bookmarks",
@@ -11,7 +11,8 @@
     "sidePanel",
     "storage",
     "tabGroups",
-    "tabs"
+    "tabs",
+    "sessions"
   ],
   "host_permissions": [
     "http://127.0.0.1:8765/*"

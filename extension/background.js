@@ -115,6 +115,31 @@ chrome.tabs.onRemoved.addListener(async (tabId) => {
 });
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+
+  if (message?.type === "RM_OPEN_URL") {
+    chrome.tabs.create({ url: message.url }).then(tab => sendResponse({ ok: true, tabId: tab.id })).catch(error => sendResponse({ ok: false, error: error.message }));
+    return true;
+  }
+  if (message?.type === "RM_CLOSE_TAB") {
+    const tabId = sender.tab?.id;
+    (tabId ? chrome.tabs.remove(tabId) : activeTab().then(t => t?.id && chrome.tabs.remove(t.id))).then(() => sendResponse({ ok: true })).catch(error => sendResponse({ ok: false, error: error.message }));
+    return true;
+  }
+  if (message?.type === "RM_REOPEN_TAB") {
+    chrome.sessions.restore().then(session => sendResponse({ ok: true, session })).catch(error => sendResponse({ ok: false, error: error.message }));
+    return true;
+  }
+  if (message?.type === "RM_NEXT_TAB") {
+    chrome.tabs.query({ currentWindow: true }).then(async tabs => {
+      const activeIndex = tabs.findIndex(t => t.active);
+      if (activeIndex < 0 || !tabs.length) return sendResponse({ ok: false });
+      const delta = Number(message.direction) || 1;
+      const target = tabs[(activeIndex + delta + tabs.length) % tabs.length];
+      await chrome.tabs.update(target.id, { active: true });
+      sendResponse({ ok: true });
+    }).catch(error => sendResponse({ ok: false, error: error.message }));
+    return true;
+  }
   if (message?.type === "RM_GET_ACTIVE_TAB") {
     activeTab().then(sendResponse);
     return true;
