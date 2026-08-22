@@ -1,0 +1,22 @@
+services:
+  richmack-services:
+    build: ./services
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8765:8765"
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    tmpfs:
+      - /tmp:size=128m,noexec,nosuid,nodev
+    volumes:
+      - ${HOME}/Downloads/Richmack:/downloads
+      - ${RICHMACK_WORKDIR:-./data}:/workspace:ro
+    environment:
+      RICHMACK_DOWNLOADS: /downloads
+      RICHMACK_WORKDIR: /workspace
+    pids_limit: 128
+    mem_limit: 768m
+    cpus: 2.0

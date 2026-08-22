@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+set -euo pipefail
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+CHROMIUM="/Applications/Chromium.app/Contents/MacOS/Chromium"
+if [ ! -x "$CHROMIUM" ]; then
+  echo "Richmack Browser requires Chromium at /Applications/Chromium.app"
+  echo "Install it with: brew install --cask chromium"
+  exit 1
+fi
+
+# Reuse the established v0.5.4+ Richmack profile so sessions, logins and pin state survive upgrades.
+PROFILE="$HOME/.richmack/browser-profile-v054"
+DEFAULT="$PROFILE/Default"
+PREFS="$DEFAULT/Preferences"
+mkdir -p "$DEFAULT"
+
+# Chromium exposes a user pref for pinning newly-added extensions by default.
+# Seed it only before Chromium owns the Preferences file; never rewrite a live profile.
+if [ ! -s "$PREFS" ]; then
+  cat > "$PREFS" <<'JSON'
+{
+  "extensions": {
+    "pinned_by_default": true,
+    "ui": {"developer_mode": true}
+  },
+  "browser": {
+    "check_default_browser": false
+  }
+}
+JSON
+fi
+
+EXTS="$(printf '%s,' "$ROOT"/extensions/* | sed 's/,$//')"
+exec "$CHROMIUM" \
+  --user-data-dir="$PROFILE" \
+  --load-extension="$EXTS" \
+  --disable-extensions-except="$EXTS" \
+  --force-dark-mode \
+  --enable-features=WebUIDarkMode \
+  --no-first-run \
+  --no-default-browser-check \
+  "$@"
