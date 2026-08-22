@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Richmack Feed",
-  "version": "0.5.5",
+  "version": "0.6.0",
   "description": "Detect native feeds or build clean, readable local feeds from page content",
   "permissions": [
     "activeTab",

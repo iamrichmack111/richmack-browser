@@ -1,90 +1,181 @@
-# Richmack Browser OS v0.5.5
+# Richmack Browser OS v0.6.0
 
-Richmack Browser is a dedicated Chromium profile plus eight small native-toolbar extensions. It keeps Chromium's native tabs/security update path while adding a dark Richmack identity, qutebrowser-style keyboard control, extraction/media/feed tools, and user-directed browser automation.
+Richmack Browser OS is a lightweight, dark Chromium distribution layer: a dedicated Chromium profile, a custom Richmack new-tab experience, eight separate toolbar extensions, and an optional localhost container for generated feeds/media services. It keeps Chromium's native tabs and security/update path rather than maintaining a Chromium fork.
 
-## v0.5.5 changes
+## What is included
 
-### Dark Chromium by default
-
-The launcher now starts Chromium with `--force-dark-mode` and `WebUIDarkMode`. Richmack's new-tab page and every Richmack tool remain dark as well.
-
-### Individual toolbar icons, pinned by default on the fresh v0.5.5 profile
-
-The eight tools remain separate native Chromium actions: **Core · Extract · Images · Email · Media · Feed · Pick · Automate**. Chromium itself owns the toolbar, so Richmack cannot call an extension API to pin itself after startup. Instead, the dedicated v0.5.5 profile is seeded with Chromium's own `extensions.pinned_by_default` preference before first launch. Chromium source defines this preference specifically as whether new extensions should be pinned by default.
-
-The v0.5.5 launcher uses `~/.richmack/browser-profile-v054`, leaving older Richmack profiles untouched. Once Chromium has created the profile, it remembers toolbar state normally.
-
-### Automation recorder/replayer
-
-Pick remains available for one-off targets, but is no longer required for normal automation.
-
-1. Open the **Automate** lightning icon.
-2. Click **Record** and grant permission for the current site when Chromium asks.
-3. Perform the workflow once: clicks, Next buttons, selections, and ordinary text fields are recorded.
-4. Reopen **Automate**, click **Stop**, name the workflow, and save it.
-5. Use **Run** later to replay the saved sequence.
-
-The recorder uses semantic labels as a fallback when a CSS selector changes. It never stores password values. Password/secret fields stop replay for manual entry. Steps that look like final submissions, purchases, posts, sends, or other consequential final actions are marked for confirmation and replay stops before them.
-
-An active recording can survive same-site navigation after the user has explicitly granted that site's origin permission. Richmack does not request blanket browsing access at install time.
-
-## Toolbar suite
-
-- **Richmack Core** — wolf icon, dark Richmack new tab, workspaces, Richmack Mode, `:` command bar.
-- **Extract** — links, readable text, PDFs and document links.
-- **Images** — detect/download page images.
-- **Email** — extract/deduplicate visible and `mailto:` addresses.
-- **Media** — video/audio handoff to the local yt-dlp service.
-- **Feed** — native RSS/Atom detection, semantic job feeds, Richmack Feed Reader, generated local RSS.
+- **Richmack Core** — wolf branding, dark new tab, workspaces, Richmack/qutebrowser-style keyboard mode and `:` commands.
+- **Extract** — links, readable text, PDFs and document URLs.
+- **Images** — detect and download page images.
+- **Email** — extract and deduplicate visible and `mailto:` email addresses.
+- **Media** — video/audio handoff to the local service.
+- **Feed** — detect native RSS/Atom, create semantic job feeds, preview/read results, export RSS for Newsboat.
 - **Pick** — visually select a one-off page element.
-- **Automate** — record/save/replay workflows and find controls by text.
+- **Automate** — record/replay workflows and bulk-run matching visible controls with confirmation, delay and caps.
+
+The extensions remain individual Chromium toolbar icons. Chromium owns the toolbar pin state; Richmack seeds `pinned_by_default` on a fresh profile and Chromium remembers your layout afterward.
+
+## Supported desktop platforms
+
+The installer automatically detects:
+
+- **macOS** — installs a real `Richmack Browser.app` to `~/Applications` and places a Richmack Browser icon on the Desktop.
+- **Ubuntu / Debian Linux** — installs a desktop launcher to `~/.local/share/applications` and, when a Desktop folder exists, places a launch icon there too.
+
+The package copies itself to a persistent install directory, so you can delete the extracted ZIP folder after installation.
+
+## One-command install
+
+### macOS
+
+```bash
+cd ~/Downloads
+unzip richmack-browser-v0.6.0.zip
+cd richmack-browser-v0.6.0
+./install.sh
+```
+
+If Chromium is missing and Homebrew is available, the installer installs Chromium for you. macOS may require you to approve Chromium the first time it is opened.
+
+Installed locations:
+
+```text
+~/Applications/Richmack Browser.app
+~/Desktop/Richmack Browser.app
+~/Library/Application Support/Richmack Browser
+~/.richmack/browser-profile-v054
+```
+
+### Ubuntu / Debian
+
+```bash
+cd ~/Downloads
+unzip richmack-browser-v0.6.0.zip
+cd richmack-browser-v0.6.0
+./install.sh
+```
+
+If Chromium is missing and Snap is available, the installer runs `sudo snap install chromium`.
+
+Installed locations:
+
+```text
+~/.local/share/richmack-browser
+~/.local/share/applications/richmack-browser.desktop
+~/Desktop/Richmack Browser.desktop     # when ~/Desktop exists
+~/.richmack/browser-profile-v054
+```
+
+## Desktop icon
+
+The desktop application uses the Richmack blue wolf icon in `assets/`. macOS receives an `.icns` application icon; Linux receives PNG icons and a `.desktop` launcher.
+
+## Extension-only package
+
+You do **not** have to distribute the whole browser package. `richmack-extension-suite-v0.6.0.zip` contains only the eight Richmack Chromium extensions.
+
+This is useful for someone who wants Richmack tools in an existing Chromium profile without the desktop application or Docker backend.
+
+For development/unpacked installation:
+
+1. Extract `richmack-extension-suite-v0.6.0.zip`.
+2. Open `chrome://extensions` in Chromium.
+3. Enable **Developer mode**.
+4. Choose **Load unpacked** for whichever extension folders you want.
+
+Because Richmack uses separate extensions to provide separate native toolbar icons, each tool is its own folder. The extension-only bundle does not silently modify a user's normal Chromium profile.
+
+## Dark mode
+
+The Richmack launcher always starts Chromium with dark UI flags and keeps all Richmack pages/popups dark:
+
+```text
+--force-dark-mode
+--enable-features=WebUIDarkMode
+```
 
 ## Richmack Mode
 
 Toggle from Core or `Command+Shift+Space` on macOS.
 
-- `j` / `k` — scroll
-- `h` / `l` — back / forward
-- `gg` / `G` — top / bottom
-- `f` — prefix-free link/button hints
-- `J` / `K` — previous / next tab
-- `d` — close tab
-- `u` — reopen closed tab
-- `:` — Richmack command bar
-
-## Install
-
-```bash
-cd ~/Downloads
-unzip richmack-browser-v0.5.5.zip
-cd richmack-browser-v0.5.5
-./install.sh
+```text
+j / k    scroll
+h / l    back / forward
+gg / G   top / bottom
+f        link/button hints
+J / K    previous / next tab
+d        close tab
+u        reopen tab
+:        Richmack command bar
 ```
 
-Chromium must already be installed at `/Applications/Chromium.app`. The installer starts/updates the localhost backend when Docker is available and launches the dedicated v0.5.5 Richmack profile.
+## Automation
 
-## RSS / Newsboat
+Two automation styles are available:
 
-Generated feeds remain standard RSS 2.0 at local URLs such as:
+1. **Recorder/replayer** — press Record, perform a workflow once, Stop, name it and save it. Replay later.
+2. **Bulk sequence** — find every visible control whose accessible label matches a phrase such as `Follow`, preview the matches, set a cap/delay, and run the selected action sequentially.
+
+Bulk runs re-query the live DOM after each click. Exact matching is enabled by default so `Follow` does not match `Following`. Runs are capped and confirmed, and Richmack does not bypass CAPTCHAs or site rate limits.
+
+Passwords are never recorded. Replay stops at secret fields and flagged final/consequential actions.
+
+## Feed / RSS / Newsboat
+
+Feed first uses a site's native RSS/Atom when available. When a native feed does not exist, Richmack can generate a local RSS 2.0 feed. Known job pages receive semantic cleanup so salary, FAQ and navigation links are excluded.
+
+Generated URLs look like:
 
 ```text
 http://127.0.0.1:8765/feeds/richmack-xxxxxxxxxxxxxxxx.xml
 ```
 
-Newsboat running on the same Mac can subscribe to those URLs directly. Native RSS/Atom is preferred when a site publishes one; known page types such as Indeed job results get semantic cleanup; generic pages use conservative repeated-content extraction.
+Newsboat running on the same machine can subscribe directly by adding a line to `~/.newsboat/urls`:
 
-## Security
+```text
+http://127.0.0.1:8765/feeds/richmack-xxxxxxxxxxxxxxxx.xml "richmack"
+```
 
-- Backend binds only to `127.0.0.1:8765`.
+## Optional local service container
+
+The browser itself is **not** containerized. The optional backend is. When Docker is installed, `install.sh` starts the service on localhost only:
+
+```text
+127.0.0.1:8765
+```
+
+It supports generated RSS and media/document backend tasks while keeping the desktop browser native.
+
+## Security model
+
+- Backend binds only to `127.0.0.1`.
 - No webpage gets shell access.
-- Automation site permission is requested when recording begins, not globally at installation.
-- Passwords are never stored by the recorder.
-- Replay stops at secret fields and flagged final/consequential actions.
-- Downloads remain sandboxed to `~/Downloads/Richmack`.
+- No Docker socket is mounted into the service container.
+- Site automation permissions are user-directed.
+- Password values are never stored.
+- Final/consequential workflow steps require manual control.
+- Downloads are sandboxed to `~/Downloads/Richmack`.
 - No recursive site crawling by default.
 
-## v0.5.5 bulk sequence automation
+See `docs/SECURITY.md` for additional details.
 
-Automate can now find every visible control whose accessible label matches a phrase such as `Follow`, preview those matches, and run the same action sequentially. The default cap is 10 actions per run, adjustable from 1–25, with a 1–10 second delay between actions. Exact label matching is enabled by default so `Follow` does not accidentally match `Following`. The engine re-queries the live DOM after each click, which is more reliable on dynamic social/job pages than replaying a stale list of CSS selectors. A Stop button cancels the sequence after the current click.
+## Uninstall
 
-Bulk sequence is intentionally limited to the currently rendered page state and requires a confirmation before each run. It does not auto-scroll an infinite feed, bypass CAPTCHAs, or override site rate limits.
+From the extracted package or installed source:
+
+```bash
+./uninstall.sh
+```
+
+Uninstall intentionally leaves the Richmack profile at `~/.richmack/browser-profile-v054` so logins/bookmarks are not destroyed. Remove that directory manually only if you want a complete profile reset.
+
+## Release artifacts
+
+A v0.6.0 release can publish both:
+
+```text
+richmack-browser-v0.6.0.zip            full macOS/Ubuntu installer
+richmack-extension-suite-v0.6.0.zip    extensions only
+```
+
+This lets users choose between the full Richmack Browser experience and the standalone Richmack toolbar toolkit.

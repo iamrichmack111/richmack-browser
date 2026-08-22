@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Richmack Core",
-  "version": "0.5.5",
+  "version": "0.6.0",
   "description": "Richmack Browser core: dark new tab, workspaces, and qutebrowser-style keyboard controls.",
   "permissions": [
     "storage",

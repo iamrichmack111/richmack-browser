@@ -1,21 +1,34 @@
 #!/usr/bin/env bash
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-CHROMIUM="/Applications/Chromium.app/Contents/MacOS/Chromium"
-if [ ! -x "$CHROMIUM" ]; then
-  echo "Richmack Browser requires Chromium at /Applications/Chromium.app"
-  echo "Install it with: brew install --cask chromium"
-  exit 1
-fi
-
-# Reuse the established v0.5.4+ Richmack profile so sessions, logins and pin state survive upgrades.
 PROFILE="$HOME/.richmack/browser-profile-v054"
 DEFAULT="$PROFILE/Default"
 PREFS="$DEFAULT/Preferences"
 mkdir -p "$DEFAULT"
 
-# Chromium exposes a user pref for pinning newly-added extensions by default.
-# Seed it only before Chromium owns the Preferences file; never rewrite a live profile.
+if [ "$(uname -s)" = "Darwin" ]; then
+  CHROMIUM="/Applications/Chromium.app/Contents/MacOS/Chromium"
+  if [ ! -x "$CHROMIUM" ] && [ -x "$HOME/Applications/Chromium.app/Contents/MacOS/Chromium" ]; then
+    CHROMIUM="$HOME/Applications/Chromium.app/Contents/MacOS/Chromium"
+  fi
+else
+  CHROMIUM=""
+  for c in chromium chromium-browser; do
+    if command -v "$c" >/dev/null 2>&1; then CHROMIUM="$(command -v "$c")"; break; fi
+  done
+fi
+
+if [ -z "${CHROMIUM:-}" ] || [ ! -x "$CHROMIUM" ]; then
+  echo "Richmack Browser requires Chromium."
+  if [ "$(uname -s)" = "Darwin" ]; then
+    echo "Install with: brew install --cask chromium"
+  else
+    echo "Ubuntu: sudo snap install chromium"
+  fi
+  exit 1
+fi
+
+# Seed only a new profile. Chromium owns this file after first launch.
 if [ ! -s "$PREFS" ]; then
   cat > "$PREFS" <<'JSON'
 {
@@ -23,9 +36,7 @@ if [ ! -s "$PREFS" ]; then
     "pinned_by_default": true,
     "ui": {"developer_mode": true}
   },
-  "browser": {
-    "check_default_browser": false
-  }
+  "browser": {"check_default_browser": false}
 }
 JSON
 fi
