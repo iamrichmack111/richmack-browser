@@ -1,0 +1,48 @@
+{
+  "manifest_version": 3,
+  "name": "Richmack Browser OS",
+  "version": "0.1.0",
+  "description": "Dark, keyboard-first Chromium workspace with extraction, smart bookmarks, automation and local tools.",
+  "permissions": [
+    "activeTab",
+    "bookmarks",
+    "downloads",
+    "scripting",
+    "sidePanel",
+    "storage",
+    "tabGroups",
+    "tabs"
+  ],
+  "host_permissions": [
+    "http://127.0.0.1:8765/*"
+  ],
+  "optional_host_permissions": [
+    "http://*/*",
+    "https://*/*"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_title": "Open Richmack Browser OS"
+  },
+  "side_panel": {
+    "default_path": "sidepanel/index.html"
+  },
+  "commands": {
+    "toggle-richmack-mode": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+Space",
+        "mac": "Command+Shift+Space"
+      },
+      "description": "Toggle Richmack keyboard mode"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}
