@@ -33,7 +33,6 @@ exec "$BROWSER" \
   --user-data-dir="$PROFILE" \
   --load-extension="$EXT" \
   --no-first-run \
+  --no-default-browser-check \
   --disable-sync \
-  --disable-background-networking \
-  --disable-component-update \
   "$@"

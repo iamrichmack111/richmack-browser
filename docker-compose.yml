@@ -1,7 +1,6 @@
 services:
   richmack-services:
     build: ./services
-    container_name: richmack-browser-services
     restart: unless-stopped
     ports:
       - "127.0.0.1:8765:8765"

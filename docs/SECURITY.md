@@ -1,68 +1,29 @@
-# Richmack Browser OS Security Model
+# Richmack Browser OS Security Model — v0.3.0
 
-## Trust boundaries
+Richmack is deliberately an extension/configuration layer on upstream Chromium instead of a Chromium source fork. Chromium remains responsible for the browser engine, sandbox, renderer isolation, and security updates.
 
-A webpage is untrusted. It must never have a direct path to the local shell, Docker API, filesystem, or Richmack service controls.
+## Boundaries
 
-```text
-UNTRUSTED WEBPAGE
-      |
-      | user-triggered extension action only
-      v
-RICHMACK EXTENSION
-      |
-      | explicit validation / permission check
-      v
-LOCAL RICHMACK SERVICE
-      |
-      +--> sandboxed downloads
-      +--> allowlisted commands
-```
+Web pages do not receive a direct path to the host shell, Docker socket, SSH keys, or local filesystem. Richmack injects content tooling only following user actions such as extraction, keyboard mode, or element picking.
 
-## Current controls
+The optional backend listens only on `127.0.0.1:8765`. The Docker Compose configuration does not publish it to the LAN, does not mount the Docker socket, drops Linux capabilities, runs as a non-root user, uses a read-only root filesystem, and limits resources.
 
-- Manifest V3.
-- No always-on all-sites content script.
-- `activeTab` is used for user-triggered page inspection.
-- Automation host permissions are optional and requested at run time.
-- Local backend is reachable through `127.0.0.1` only from the host.
-- Container runs as UID 10001 and drops all capabilities.
-- `no-new-privileges` enabled.
-- Container root filesystem is read-only.
-- `/tmp` is a limited `tmpfs` with `noexec`, `nosuid`, and `nodev`.
-- Work directory is mounted read-only.
-- Downloads are confined to a dedicated mounted directory.
-- Document path traversal is rejected after canonical path resolution.
-- Terminal command input is an exact allowlist lookup.
-- subprocesses use argument arrays with `shell=False`.
-- Commands have short timeouts and bounded output.
-- Media URL input accepts HTTP/S only and rejects embedded URL credentials.
-- yt-dlp is invoked with `--no-exec`, `--no-playlist`, restricted filenames, and a maximum file size.
-- FastAPI interactive docs are disabled.
+## Automation
 
-## Things intentionally not present in v0.1
+Automation is intentionally narrow in v0.3. The user visually picks an element, Richmack stores a selector, and the user may replay that click. Richmack does not expose arbitrary JavaScript evaluation or arbitrary command execution.
 
-- arbitrary shell terminal
-- Docker socket mount
-- host filesystem mount
-- SSH private key mount
-- browser credential extraction
-- automatic form-password capture
-- cloud-exposed API
-- remote code execution hooks
-- downloaded script execution
-- unrestricted Playwright endpoint
+## Terminal
 
-## Before public distribution
+The terminal interface was removed. A container shell was not useful enough to justify the interface and a real local shell would increase compromise impact.
 
-- Sign release artifacts.
-- Produce reproducible checksums.
-- Add dependency and container vulnerability scanning.
-- Add Content Security Policy review for extension pages.
-- Replace development extension loading with signed/store distribution where appropriate.
-- Add origin-aware CSRF/authentication token for localhost service calls.
-- Add rate limits and job concurrency limits.
-- Add download MIME/type validation.
-- Add audit log with sensitive-value redaction.
-- Add explicit permission UI for every capability that touches local resources.
-- Threat-model Native Messaging before enabling a true interactive host terminal.
+## Chromium updates
+
+The launcher no longer disables Chromium component updates or background networking. Richmack should not weaken upstream security maintenance merely to appear lighter.
+
+## Permissions
+
+`activeTab` and `scripting` are used for user-triggered page tooling. Persistent HTTP/S host access remains optional rather than globally granted at install time.
+
+## Downloads
+
+Downloads initiated by the extension use Chromium's downloads API. Backend media downloads are written only to the configured Richmack download mount.

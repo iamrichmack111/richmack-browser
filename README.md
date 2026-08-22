@@ -1,181 +1,130 @@
-# Richmack Browser OS v0.1.0
+# Richmack Browser OS v0.3.0
 
-A dark, keyboard-first Chromium layer centered on workspaces, smart bookmarks, extraction, local tools, and browser automation.
+Richmack Browser OS is a lightweight Chromium configuration and extension layer designed to feel like its own browser without maintaining a Chromium fork.
 
-![Richmack Browser concept](docs/ui-concept.png)
+## What changed in v0.3
 
-## What works in this starter
+v0.3 pivots away from a permanent dashboard. Richmack now uses a subtle wolf toolbar button that opens a compact action tray. The detailed side panel is optional and hidden until you press **More**.
 
-- Dedicated Richmack Chromium profile launcher
-- Manifest V3 side panel
-- Dark / compact Richmack interface and custom Richmack icon
-- Workspace selector foundation
-- Smart bookmarks with workspace, tags, unread state, visit counts, and filtering
-- Active-tab browser manager
-- Richmack keyboard mode with `j`, `k`, `g`, `G`, `f`, `Esc`
-- Link hints overlay
-- One-click page scan for links, images, direct videos, PDFs, downloadable files, and page text
-- Copy extracted links
-- Download discovered images and PDFs
-- Save visible page text
-- Video download handoff to a local `yt-dlp` service
-- Selector testing and click automation
-- Saved click-workflow foundation
-- Safe terminal panel backed by an allowlisted local service
-- PDF / EPUB / TXT / MD / CSV / JSON text extraction API
-- Docker Compose service bound only to `127.0.0.1`
+The default new-tab page is also Richmack-branded, dark, minimal, and workspace-aware.
 
-## Deliberate security defaults
+### Toolbar-first actions
 
-Richmack Browser does **not** inject a persistent content script into every site. Page access is initiated by the user. Automation can request persistent access to an individual HTTP/S origin when needed.
+- Extract page data
+- Download images
+- Hand a media page to the local yt-dlp service
+- Visually pick a button/link for automation
+- Save a smart bookmark
+- Open detailed tools only when needed
+- Toggle Richmack keyboard mode
 
-The local service is published only on `127.0.0.1:8765`. The container drops Linux capabilities, uses `no-new-privileges`, runs as an unprivileged user, has a read-only root filesystem, and exposes only a dedicated downloads directory plus a read-only work directory.
+Chromium gives one toolbar slot per extension. Richmack therefore uses one wolf toolbar icon containing a compact row of tool icons. Multiple independent top-toolbar icons would require separate mini-extensions or a Chromium source fork.
 
-The terminal API does not accept shell syntax or arbitrary commands. It maps exact command names to fixed argument arrays and invokes them with `shell=False`.
+## Workspaces
 
-See [docs/SECURITY.md](docs/SECURITY.md).
+Richmack workspaces use Chromium tab groups rather than trying to replace Chromium's native tab strip.
 
-## Quick start
+Default workspaces:
 
-### 1. Start the optional local service
+- Development
+- Research
+- Automation
+- Media
 
-```bash
-mkdir -p "$HOME/Downloads/Richmack"
-cd richmack-browser-v0.1.0
-docker compose up -d --build
-curl -s http://127.0.0.1:8765/health
-```
+Use **Assign tab** to attach the current tab to the active workspace. Switching a workspace activates one of its tabs and collapses other Richmack workspace groups.
 
-### 2. Launch the dedicated Richmack browser profile
-
-macOS/Linux:
-
-```bash
-./launcher/richmack-browser
-```
-
-Chrome/Chromium will start with the unpacked extension loaded from this repository and an isolated profile at:
-
-```text
-~/.richmack/browser-profile
-```
-
-You can also load `extension/` manually from `chrome://extensions` with Developer Mode enabled.
-
-## Keyboard mode
-
-Use the extension command configured as **Toggle Richmack keyboard mode**. The suggested shortcut is `Command+Shift+Space` on macOS or `Ctrl+Shift+Space` elsewhere.
-
-Current keys:
-
-| Key | Action |
-|---|---|
-| `j` | Scroll down |
-| `k` | Scroll up |
-| `g` | Top |
-| `G` | Bottom |
-| `f` | Show link/button hints |
-| `Esc` | Clear hints |
-
-The next milestone is a full command palette and multi-key hint activation.
+Domain routing can automatically assign known sites to a workspace.
 
 ## Extraction
 
-Open the Richmack side panel and choose **Extract**. `Scan Current Page` enumerates:
+The scanner can identify:
 
 - links
 - images
-- direct video sources
-- PDF links
-- EPUB/TXT/Markdown/CSV/JSON links
+- email addresses
+- video URLs exposed in the page
+- PDFs
+- EPUB/TXT/Markdown/CSV/JSON/ZIP and common office-document links
 - visible page text
 
-The video button passes the current page URL to `yt-dlp` inside the local container. Use it only for media you are authorized to download and where permitted by the service/site terms.
+Direct resources such as `.pdf`, `.epub`, `.txt`, `.csv`, `.json`, `.mp4`, `.mp3`, and `.zip` are recognized from the current tab URL even when Chromium blocks DOM injection into its built-in viewer.
 
-## Safe terminal
+The popup uses clean-link normalization for copied URLs and removes common tracking parameters.
 
-The v0.1 terminal intentionally supports only these fixed commands:
+## Automation
 
-```text
-pwd
-ls
-whoami
-git status
-git log
-```
+The v0.3 automation flow is visual:
 
-Add commands by editing `ALLOWED_COMMANDS` in `services/app/main.py`. Keep entries as fixed argv arrays rather than accepting arbitrary shell input.
+1. Click the Richmack wolf.
+2. Click **Pick**.
+3. Hover over the page.
+4. Click the button or link you want Richmack to remember.
+5. Reopen Richmack and use **Click saved target**.
 
-## Files and books
+The page itself never receives shell access. Automation remains user-triggered.
 
-The local service includes:
+## Keyboard mode
 
-```text
-POST /documents/analyze
-```
+Toggle **MODE** from the popup or use `Command+Shift+Space` on macOS.
 
-It only reads files underneath the mounted Richmack download sandbox. Supported formats in v0.1:
+- `j` — scroll down
+- `k` — scroll up
+- `g` — top
+- `G` — bottom
+- `f` — letter hints for clickable elements
 
-```text
-PDF EPUB TXT MD CSV JSON
-```
+## Terminal removed
 
-## Architecture
+The terminal UI was intentionally removed in v0.3. The previous container shell added complexity without providing a true local terminal, and exposing the user's real shell would materially increase the browser's attack surface.
 
-```text
-Chromium / Chrome
-      |
-      +-- Richmack MV3 extension
-      |      +-- side panel
-      |      +-- keyboard mode
-      |      +-- smart bookmarks
-      |      +-- extraction
-      |      +-- automation
-      |
-      +---- localhost only ----> Richmack Services container
-                                  +-- safe command allowlist
-                                  +-- yt-dlp
-                                  +-- PDF / EPUB / text parsing
-                                  +-- future Playwright worker
-```
+## Local service
 
-## Next build targets
+The optional Docker service remains available for media and document-related backend work. It binds only to:
 
-1. Real Zen-style tab-to-workspace assignment and workspace restoration.
-2. Essentials / pinned tabs / workspace tab groups.
-3. Smart folders and domain routing UI.
-4. Command palette (`:`) and command registry.
-5. Link-hint key activation instead of display-only hints.
-6. Automation recorder for click/fill/select/wait/download steps.
-7. Secret references instead of credentials in workflows.
-8. Download queue and file-vault database.
-9. Split-pane terminal using a Native Messaging host or tightly scoped local PTY broker.
-10. Optional Playwright service profile.
-11. Optional local RAG / Ollama integration.
-12. Signed macOS/Linux installers.
+`127.0.0.1:8765`
 
-## Important limitation
+The browser still works when the service is offline; only backend-dependent actions are unavailable.
 
-This is a **Chromium layer**, not a Chromium source fork. That is intentional: upstream Chromium/Chrome keeps responsibility for browser security patches, while Richmack owns the UI and automation layer.
-
-## v0.2.0 performance / Chromium pass
-
-- Chromium-only launcher on macOS/Linux; no silent Google Chrome fallback.
-- Subtle geometric wolf icon using the existing Richmack blue/cyan/purple palette.
-- Compact side-panel rail mode via the menu button. Chrome still controls the physical side-panel width; compact mode stops rendering the heavy panel content.
-- Collapsible Workspace, Smart Bookmarks, Active Tabs, Downloads, Scan Output and Workflow sections.
-- Active Tabs are loaded only when their section is expanded.
-- Workflow UI is loaded only when Automation is opened.
-- Backend health is checked only when Extract or Terminal is opened; there is no health polling loop.
-- Tab refreshes are event-driven rather than timer-driven.
-- Richmack mode gives brief page feedback and qutebrowser-style letter hints.
-- Safe terminal remains local-service-only and command allowlisted.
-- yt-dlp is pinned to the exact development build that pip advertised as available during the v0.1 install failure.
-
-### macOS Chromium launch
+## Install
 
 ```bash
+cd ~/Downloads
+unzip richmack-browser-v0.3.0.zip
+cd richmack-browser-v0.3.0
+./install.sh
+```
+
+If Chromium is already open with an older unpacked Richmack extension, visit `chrome://extensions`, remove/disable the old version, and load:
+
+`/Users/richmack/Downloads/richmack-browser-v0.3.0/extension`
+
+## Launch
+
+```bash
+cd ~/Downloads/richmack-browser-v0.3.0
 ./launcher/richmack-browser
 ```
 
-The launcher searches `/Applications/Chromium.app/Contents/MacOS/Chromium` first and intentionally refuses to fall back to Google Chrome.
+Richmack uses its own Chromium profile at:
+
+`~/.richmack/browser-profile`
+
+The launcher intentionally does not fall back to Google Chrome.
+
+## Security defaults
+
+- no arbitrary shell execution
+- no terminal UI
+- no Docker socket mount
+- service bound to localhost only
+- page scripts cannot call the local service directly through Richmack
+- DOM tooling is injected only after a user action
+- automation is user-triggered
+- no global HTTP/S host permission granted by default
+- Chromium component updates are not disabled by the launcher
+
+Run the local checks with:
+
+```bash
+./tests/smoke.sh
+```

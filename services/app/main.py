@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import os
-import shlex
 import subprocess
 from pathlib import Path
 from urllib.parse import urlparse
@@ -16,17 +15,6 @@ DOWNLOAD_ROOT.mkdir(parents=True, exist_ok=True)
 WORK_ROOT.mkdir(parents=True, exist_ok=True)
 
 app = FastAPI(title=APP_NAME, docs_url=None, redoc_url=None)
-
-ALLOWED_COMMANDS: dict[str, list[str]] = {
-    "pwd": ["pwd"],
-    "ls": ["ls", "-la"],
-    "whoami": ["whoami"],
-    "git status": ["git", "status", "--short", "--branch"],
-    "git log": ["git", "log", "--oneline", "-10"],
-}
-
-class TerminalRequest(BaseModel):
-    command: str = Field(min_length=1, max_length=80)
 
 class MediaRequest(BaseModel):
     url: str = Field(min_length=8, max_length=4096)
@@ -56,33 +44,8 @@ def health():
     return {
         "app": APP_NAME,
         "status": "ok",
-        "terminal": "allowlist",
         "download_root": str(DOWNLOAD_ROOT),
     }
-
-
-@app.post("/terminal/run")
-def terminal_run(req: TerminalRequest):
-    argv = ALLOWED_COMMANDS.get(req.command.strip())
-    if not argv:
-        raise HTTPException(status_code=403, detail={
-            "message": "Command is not allowlisted",
-            "allowed": sorted(ALLOWED_COMMANDS),
-        })
-    try:
-        proc = subprocess.run(
-            argv,
-            cwd=WORK_ROOT,
-            capture_output=True,
-            text=True,
-            timeout=5,
-            shell=False,
-            env={"PATH": os.environ.get("PATH", "/usr/bin:/bin"), "HOME": str(WORK_ROOT)},
-        )
-    except subprocess.TimeoutExpired:
-        raise HTTPException(status_code=408, detail="Command timed out")
-    output = (proc.stdout + proc.stderr)[-12000:]
-    return {"ok": proc.returncode == 0, "returncode": proc.returncode, "output": output}
 
 
 @app.post("/media/download")

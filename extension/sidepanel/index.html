@@ -1,75 +1,8 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Richmack Browser OS</title>
-  <link rel="stylesheet" href="style.css" />
-</head>
-<body>
-  <header class="brand">
-    <img src="../icons/icon48.png" alt="Richmack wolf" />
-    <div class="brandText"><strong>RICHMACK</strong><small>BROWSER OS</small></div>
-    <button id="collapseBtn" class="iconBtn" title="Compact panel">☰</button>
-    <button id="modeBtn" class="modeBtn">MODE OFF</button>
-  </header>
-
-  <nav class="tabs" aria-label="Richmack tools">
-    <button data-view="workspace" class="active"><span>⌂</span><b>Workspace</b></button>
-    <button data-view="extract"><span>⇩</span><b>Extract</b></button>
-    <button data-view="automate"><span>⚙</span><b>Automate</b></button>
-    <button data-view="terminal"><span>&gt;_</span><b>Terminal</b></button>
-  </nav>
-
-  <main>
-    <section id="workspace" class="view active">
-      <details open>
-        <summary>WORKSPACES <button id="newWorkspace" class="mini" type="button">+</button></summary>
-        <div id="workspaceList" class="cards"></div>
-      </details>
-
-      <details open>
-        <summary>SMART BOOKMARKS <button id="bookmarkCurrent" class="mini" type="button">★</button></summary>
-        <div class="toolbar"><input id="bookmarkSearch" placeholder="filter bookmarks" /><select id="bookmarkFilter"><option>All</option><option>Unread</option><option>PDF</option><option>Media</option><option>Research</option></select></div>
-        <div id="bookmarkList" class="list"></div>
-      </details>
-
-      <details>
-        <summary>ACTIVE TABS</summary>
-        <div id="tabList" class="list"></div>
-      </details>
-    </section>
-
-    <section id="extract" class="view">
-      <div class="hero"><h2>EXTRACT</h2><p>Links · images · video · PDF · books · text</p><button id="scanPage" class="primary">Scan Current Page</button></div>
-      <div id="scanStats" class="stats"></div>
-      <details open><summary>DOWNLOADS</summary>
-        <div class="toolbar"><button id="copyLinks">Copy Links</button><button id="downloadImages">Images</button><button id="downloadPdfs">PDFs</button></div>
-        <div class="toolbar"><button id="downloadVideo" class="accent">Video</button><button id="saveText">Save Text</button></div>
-      </details>
-      <details><summary>SCAN OUTPUT</summary><pre id="extractOutput" class="output">Nothing scanned yet.</pre></details>
-    </section>
-
-    <section id="automate" class="view lazy" data-loaded="false">
-      <div class="notice">Automation is off by default. Access is requested per site when you run an action.</div>
-      <label>Selector</label><input id="selector" placeholder="button[type=submit]" />
-      <div class="toolbar"><button id="showSelector">Test</button><button id="clickSelector" class="accent">Click</button></div>
-      <details open><summary>SAVED WORKFLOWS</summary>
-        <label>Workflow name</label><input id="workflowName" placeholder="github-login" />
-        <button id="saveWorkflow" class="primary">Save Click Step</button>
-        <div id="workflowList" class="list"></div>
-      </details>
-    </section>
-
-    <section id="terminal" class="view lazy" data-loaded="false">
-      <div class="notice">Safe Terminal uses a local allowlist. Web pages cannot call it directly.</div>
-      <pre id="terminalOutput" class="terminal">richmack@browser:~$ </pre>
-      <div class="terminalRow"><input id="terminalInput" placeholder="pwd | ls | git status | whoami" /><button id="runCommand">Run</button></div>
-      <div class="chips"><button data-cmd="pwd">pwd</button><button data-cmd="ls">ls</button><button data-cmd="git status">git status</button><button data-cmd="whoami">whoami</button></div>
-    </section>
-  </main>
-
-  <footer><span id="backendDot">●</span> Backend <span id="backendStatus">idle</span><span class="spacer"></span>v0.2.0</footer>
-  <script type="module" src="app.js"></script>
-</body>
-</html>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Richmack Tools</title><link rel="stylesheet" href="style.css"></head><body>
+<header><img src="../icons/icon32.png" alt=""><div><strong>RICHMACK</strong><small>DETAIL TOOLS</small></div><button id="mode">MODE OFF</button></header>
+<nav><button data-view="workspace" class="active">Workspace</button><button data-view="extract">Extract</button><button data-view="automate">Automate</button></nav>
+<main>
+<section id="workspace" class="view active"><h2>WORKSPACES</h2><div id="workspaces" class="cards"></div><div class="row"><button id="assign" class="primary">Assign current tab</button><button id="bookmark">★ Smart bookmark</button></div><details open><summary>SMART BOOKMARKS</summary><input id="filter" placeholder="Filter bookmarks"><div id="bookmarks" class="list"></div></details></section>
+<section id="extract" class="view"><h2>EXTRACT CENTER</h2><p class="muted">Links · images · emails · documents · media · text</p><button id="scan" class="primary">Scan current page</button><div id="stats" class="stats"></div><div class="row"><button id="copyLinks">Copy clean links</button><button id="copyEmails">Copy emails</button></div><div class="row"><button id="images">Download images</button><button id="pdfs">Download PDFs</button><button id="text">Save text</button></div><pre id="output">Nothing scanned yet.</pre></section>
+<section id="automate" class="view"><h2>AUTOMATION</h2><p class="muted">Pick a page element visually, then replay the click. Site access stays user-triggered.</p><button id="pick" class="primary">Pick element on page</button><div id="picked" class="picked" hidden><code id="selector"></code><small id="pickedText"></small><button id="run" class="primary">Click saved target</button></div></section>
+</main><footer><span id="dot">●</span> Richmack tools <span class="spacer"></span>v0.3.0</footer><script type="module" src="app.js"></script></body></html>

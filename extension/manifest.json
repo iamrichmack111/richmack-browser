@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Richmack Browser OS",
-  "version": "0.2.0",
-  "description": "Fast, dark, keyboard-first Chromium workspace with collapsible tools, extraction, smart bookmarks, automation and safe local services.",
+  "version": "0.3.0",
+  "description": "A subtle, toolbar-first Richmack layer for Chromium with workspaces, smart bookmarks, extraction and safe browser automation.",
   "permissions": [
     "activeTab",
     "bookmarks",
@@ -25,10 +25,19 @@
     "type": "module"
   },
   "action": {
-    "default_title": "Open Richmack Browser OS"
+    "default_title": "Richmack",
+    "default_popup": "popup/index.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png"
+    }
   },
   "side_panel": {
     "default_path": "sidepanel/index.html"
+  },
+  "chrome_url_overrides": {
+    "newtab": "newtab/index.html"
   },
   "commands": {
     "toggle-richmack-mode": {
